@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="index.css">
+    <title>Vite App</title>
+  </head>
+  <body>
+    <form id="bookForm">
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title" />
+      <label for="author">Author:</label>
+      <input type="text" id="author" name="author" />
+      <label for="genre">Genre:</label>
+      <input type="text" id="genre" name="genre" />
+      <label for="price">Price:</label>
+      <input type="number" id="price" name="price" />
+      <input type="submit" value="Add Book">
+    </form>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Genre</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody id="booksTableBody">
+        <!-- Books will be dynamically added here -->
+      </tbody>
+    </table>
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
