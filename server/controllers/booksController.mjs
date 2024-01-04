@@ -25,6 +25,7 @@ booksController.getBookById = async (req, res) => {
             return res.status(404).send('Book not found');
         }
 
+        console.log(`Book with id ${id} fetched successfully`);
         res.send(book);
     } catch (error) {
         console.error(error);
