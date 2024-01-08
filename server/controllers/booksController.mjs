@@ -20,7 +20,6 @@ booksController.getBookById = async (req, res) => {
     try {
         const id = req.params.id;
         const book = await Book.findById(id);
-
         if (!book) {
             return res.status(404).send('Book not found');
         }
@@ -51,8 +50,8 @@ booksController.updateBook = async (req, res) => {
         const id = req.params.id;
         const updatedData = req.body;
         const result = await Book.updateOne({ _id: id }, updatedData);
-
-        if (result.nModified > 0) {
+        // modifiedCount is the number of documents that were modified
+        if (result.modifiedCount > 0) {
             res.status(200).send('Book updated successfully');
         } else {
             res.status(404).send('Book not found');
