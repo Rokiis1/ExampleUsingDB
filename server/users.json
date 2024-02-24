@@ -1,0 +1,55 @@
+[
+  {
+    "username": "Testas",
+    "password": "password12",
+    "email": "user12@example.com",
+    "id": 2,
+    "registered_on": "2022-01-02",
+    "reservations": [
+      2,
+      1
+    ]
+  },
+  {
+    "username": "user1",
+    "password": "password1",
+    "email": "user1@example.com",
+    "reservations": [
+      1
+    ],
+    "registered_on": "2024-02-24",
+    "id": 3
+  },
+  {
+    "username": "user1",
+    "password": "password1",
+    "email": "user1@example.com",
+    "reservations": [],
+    "registered_on": "2024-02-24",
+    "id": 4
+  },
+  {
+    "username": "user1",
+    "password": "password1",
+    "email": "user1@example.com",
+    "reservations": [],
+    "registered_on": "2024-02-24",
+    "id": 5
+  },
+  {
+    "username": "user1",
+    "password": "password1",
+    "email": "user1@example.com",
+    "reservations": [],
+    "registered_on": "2024-02-24T17:01:04.577Z",
+    "id": 6
+  },
+  {
+    "username": "user1",
+    "password": "password1",
+    "email": "user1@example.com",
+    "reservations": [],
+    "registered_on": "2024-02-24",
+    "id": 7
+  }
+]

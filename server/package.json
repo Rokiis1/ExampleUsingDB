@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon server.mjs",
     "build": "node build.js",
-    "lint": "eslint ."
+    "lint": "eslint . --ext .js,.mjs"
 
   },
   "keywords": [],

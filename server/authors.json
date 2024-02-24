@@ -1,0 +1,29 @@
+[
+    {
+      "id": 1,
+      "name": "Author 1",
+      "books": [
+        {
+          "id": 1,
+          "title": "Book Title 1",
+          "published_on": "2000-01-01"
+        },
+        {
+          "id": 2,
+          "title": "Book Title 2",
+          "published_on": "2005-01-01"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Author 2",
+      "books": [
+        {
+          "id": 3,
+          "title": "Book Title 3",
+          "published_on": "2010-01-01"
+        }
+      ]
+    }
+  ]
