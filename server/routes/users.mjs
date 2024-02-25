@@ -1,26 +1,28 @@
 // Importing express module
 import express from 'express';
 import userController from '../controller/userController.mjs';
+import { userValidationSchema, updateUserFieldsValidationSchema, validateReservationParams, validateUserId } from '../validators/userValidator.mjs';
+import { validate } from '../middleware/schemaValidator.mjs';
 
 const router = express.Router();
 
 router.get('/', userController.getUsers);
 
-router.post('/', userController.createUser);
+router.post('/', validate(userValidationSchema) , userController.createUser);
 
-router.get('/:id', userController.getUserById);
+router.get('/:id', validate(validateUserId) , userController.getUserById);
 
-router.put('/:id', userController.updateUser);
+router.put('/:id', validate(validateUserId, userValidationSchema), userController.updateUser);
 
-router.patch('/:id', userController.updateUserFields);
+router.patch('/:id', validate(validateUserId, updateUserFieldsValidationSchema) , userController.updateUserFields);
 
-router.delete('/:id', userController.deleteUser);
+router.delete('/:id', validate(validateUserId) , userController.deleteUser);
 
-router.get('/:id/reservations', userController.getUserReservations);
+router.get('/:id/reservations', validate(validateUserId) , userController.getUserReservations);
 
-router.post('/:userId/reservations/:bookId', userController.createReservation);
+router.post('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.createReservation);
 
-router.delete('/:userId/reservations/:bookId', userController.deleteReservation);
+router.delete('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.deleteReservation);
 
 // Export the router
 export default router;

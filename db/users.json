@@ -42,6 +42,14 @@
     "email": "user1@example.com",
     "reservations": [],
     "registered_on": "2024-02-24",
+    "id": 5
+  },
+  {
+    "username": "user1",
+    "password": "password1",
+    "email": "user1@example.com",
+    "reservations": [],
+    "registered_on": "2024-02-24",
     "id": 6
   },
   {
@@ -56,16 +64,61 @@
     "username": "user1",
     "password": "password1",
     "email": "user1@example.com",
-    "reservations": [],
     "registered_on": "2024-02-24",
+    "reservations": [],
     "id": 8
   },
   {
     "username": "user1",
     "password": "password1",
     "email": "user1@example.com",
-    "registered_on": "2024-02-24",
+    "registered_on": "2024-02-25",
+    "reservations": [],
+    "id": 9
+  },
+  {
+    "username": "",
+    "password": "",
+    "email": "",
+    "registered_on": "2024-02-25",
     "reservations": [],
     "id": 10
+  },
+  {
+    "registered_on": "2024-02-25",
+    "reservations": [],
+    "id": 11
+  },
+  {
+    "username": "users1",
+    "password": "Passwor*d1",
+    "email": "user1@example.com",
+    "registered_on": "2024-02-25",
+    "reservations": [],
+    "id": 12
+  },
+  {
+    "username": "users1",
+    "password": "Passwor.,d1",
+    "email": "user1@example.com",
+    "registered_on": "2024-02-25",
+    "reservations": [],
+    "id": 13
+  },
+  {
+    "username": "users1",
+    "password": "Passwor;',d1",
+    "email": "user1@example.com",
+    "registered_on": "2024-02-25",
+    "reservations": [],
+    "id": 14
+  },
+  {
+    "username": "users1",
+    "password": "Passwor,d1",
+    "email": "user1@example.com",
+    "registered_on": "2024-02-25",
+    "reservations": [],
+    "id": 15
   }
 ]
