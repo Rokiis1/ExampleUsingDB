@@ -41,6 +41,29 @@ const userController = {
         }
     },
 
+    login: async (req, res) => {
+        try {
+            const { username, email, password } = req.body;
+    
+            const user = users.find(user => user.username === username || user.email === email);
+    
+            if (!user) {
+                res.status(404).json({ message: 'User not found.' });
+                return;
+            }
+    
+            if (user.password !== password) {
+                res.status(401).json({ message: 'Invalid password.' });
+                return;
+            }
+    
+            res.status(200).json({ message: 'Logged in successfully.' });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: 'An error occurred while logging in.' });
+        }
+    },
+
     getUserById: (req, res) => {
         try {
             const id = parseInt(req.params.id);
