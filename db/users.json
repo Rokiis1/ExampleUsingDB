@@ -22,6 +22,8 @@
   },
   {
     "username": "Testas",
+    "password": "password12ewfwef",
+    "email": "user12wefwef@example.com",
     "id": 3,
     "registered_on": "2024-02-24",
     "reservations": []

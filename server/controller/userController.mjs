@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const userController = {
-	// Get all users
+
 	getUsers: (req, res) => {
 		try {
 			res.status(200).json(users);
@@ -24,8 +24,8 @@ const userController = {
         try {
             const newUser = {
                 ...req.body,
-                registered_on: new Date().toISOString().split('T')[0], // Add registered_on field with current date
-                reservations: [] // Add reservations field with an empty array
+                registered_on: new Date().toISOString().split('T')[0], 
+                reservations: []
             };
 
             users.push(newUser);
@@ -60,7 +60,7 @@ const userController = {
     updateUser: async (req, res) => {
         try {
             const id = parseInt(req.params.id);
-            const updatedUser = { ...req.body, id }; // Preserve the id
+            const updatedUser = { ...req.body, id };
     
             let userIndex = users.findIndex(user => user.id === id);
     
@@ -69,7 +69,6 @@ const userController = {
                 return;
             }
     
-            // Keep the original registered_on date and reservations
             updatedUser.registered_on = users[userIndex].registered_on;
             updatedUser.reservations = users[userIndex].reservations;
     
@@ -221,26 +220,20 @@ const userController = {
                 return;
             }
     
-            // Check if the user has reserved the book
             const reservationIndex = user.reservations.indexOf(bookId);
             if (reservationIndex === -1) {
                 res.status(400).json({ message: 'Book is not reserved by the user.' });
                 return;
             }
     
-            // Remove the book ID from the user's reservations
             user.reservations.splice(reservationIndex, 1);
     
-            // Increase the quantity of the book
             book.quantity++;
-    
-            // Mark the book as available
+
             book.available = true;
     
-            // Write the updated users array back to the users.json file
             await fs.promises.writeFile(path.join(__dirname, '../../db/users.json'), JSON.stringify(users, null, 2));
     
-            // Write the updated books array back to the books.json file
             await fs.promises.writeFile(path.join(__dirname, '../../db/books.json'), JSON.stringify(books, null, 2));
     
             res.status(200).json({ message: 'Book successfully unreserved.' });
