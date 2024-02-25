@@ -21,12 +21,6 @@ const userController = {
     },
 
     createUser: async (req, res) => {
-        // // Check for validation errors
-        // const errors = validationResult(req);
-        // if (!errors.isEmpty()) {
-        //     // If there are errors, return a 400 response with the errors
-        //     return res.status(400).json({ errors: errors.array() });
-        // }
         try {
             const newUser = {
                 ...req.body,
@@ -44,6 +38,29 @@ const userController = {
         } catch (err) {
             console.error(err);
             res.status(500).json({ message: 'An error occurred while creating the user.' });
+        }
+    },
+
+    login: async (req, res) => {
+        try {
+            const { username, email, password } = req.body;
+    
+            const user = users.find(user => user.username === username || user.email === email);
+    
+            if (!user) {
+                res.status(404).json({ message: 'User not found.' });
+                return;
+            }
+    
+            if (user.password !== password) {
+                res.status(401).json({ message: 'Invalid password.' });
+                return;
+            }
+    
+            res.status(200).json({ message: 'Logged in successfully.' });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: 'An error occurred while logging in.' });
         }
     },
 
@@ -99,7 +116,6 @@ const userController = {
                 return;
             }
 
-            // Merge the updated fields with the existing user
             users[userIndex] = { ...users[userIndex], ...updatedFields };
 
             await fs.promises.writeFile(path.join(__dirname, '../../db/users.json'), JSON.stringify(users, null, 2));
@@ -168,33 +184,26 @@ const userController = {
                 return;
             }
 
-            // Check if the user has already reserved the book
             if (user.reservations.includes(bookId)) {
                 res.status(400).json({ message: 'Book is already reserved by the user.' });
                 return;
             }
 
-            // Check if the book is available
             if (book.quantity === 0 || !book.available) {
                 res.status(400).json({ message: 'Book is not available.' });
                 return;
             }
 
-            // Add the book ID to the user's reservations
             user.reservations.push(bookId);
 
-            // Decrease the quantity of the book
             book.quantity--;
 
-            // If the quantity is now 0, mark the book as not available
             if (book.quantity === 0) {
                 book.available = false;
             }
 
-            // Write the updated users array back to the users.json file
             await fs.promises.writeFile(path.join(__dirname, '../../db/users.json'), JSON.stringify(users, null, 2));
 
-            // Write the updated books array back to the books.json file
             await fs.promises.writeFile(path.join(__dirname, '../../db/books.json'), JSON.stringify(books, null, 2));
 
             res.status(200).json({ message: 'Book successfully reserved.' });
