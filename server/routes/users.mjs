@@ -12,6 +12,8 @@ router.post('/register', validate(userValidationSchema) , userController.createU
 
 router.post('/login', validate(loginValidationSchema) , userController.login);
 
+router.post('/logout', userController.logout);
+
 router.get('/:id', validate(validateUserId) , userController.getUserById);
 
 router.put('/:id', validate(validateUserId, userValidationSchema) , userController.updateUser);

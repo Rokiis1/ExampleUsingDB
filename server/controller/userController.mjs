@@ -44,23 +44,51 @@ const userController = {
     login: async (req, res) => {
         try {
             const { username, email, password } = req.body;
-    
+
             const user = users.find(user => user.username === username || user.email === email);
-    
+
             if (!user) {
                 res.status(404).json({ message: 'User not found.' });
                 return;
             }
-    
+
             if (user.password !== password) {
                 res.status(401).json({ message: 'Invalid password.' });
                 return;
             }
-    
+
+            // Store the user's ID in the session
+            req.session.userId = user.id;
+
             res.status(200).json({ message: 'Logged in successfully.' });
         } catch (err) {
             console.error(err);
             res.status(500).json({ message: 'An error occurred while logging in.' });
+        }
+    },
+
+    logout: (req, res) => {
+        try {
+            // Check if the session exists
+            if (!req.session.userId) {
+                res.status(400).json({ message: 'No active session.' });
+                return;
+            }
+    
+            // Destroy the session
+            req.session.destroy(err => {
+                if (err) {
+                    console.error(err);
+                    res.status(500).json({ message: 'An error occurred while logging out.' });
+                    return;
+                }
+    
+                // Send a successful logout message
+                res.status(200).json({ message: 'Logged out successfully.' });
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: 'An error occurred while logging out.' });
         }
     },
 
@@ -173,8 +201,21 @@ const userController = {
 
     createReservation: async (req, res) => {
         try {
+
+            // Check if the user is logged in
+            if (!req.session.userId) {
+                res.status(401).json({ message: 'Please log in.' });
+                return;
+            }
+
             const userId = parseInt(req.params.userId);
             const bookId = parseInt(req.params.bookId);
+
+            // Check if the logged-in user is the same as the user making the reservation
+            if (req.session.userId !== userId) {
+                res.status(403).json({ message: 'You can only make reservations for yourself.' });
+                return;
+            }
 
             const user = users.find(user => user.id === userId);
             const book = books.find(book => book.id === bookId);
@@ -214,8 +255,21 @@ const userController = {
 
     deleteReservation: async (req, res) => {
         try {
+
+            // Check if the user is logged in
+            if (!req.session.userId) {
+                res.status(401).json({ message: 'Please log in.' });
+                return;
+            }
+
             const userId = parseInt(req.params.userId);
             const bookId = parseInt(req.params.bookId);
+
+            // Check if the logged-in user is the same as the user making the reservation
+            if (req.session.userId !== userId) {
+                res.status(403).json({ message: 'You can only make reservations for yourself.' });
+                return;
+            }
 
             const user = users.find(user => user.id === userId);
             const book = books.find(book => book.id === bookId);
