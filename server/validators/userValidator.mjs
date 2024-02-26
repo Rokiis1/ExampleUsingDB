@@ -1,4 +1,5 @@
 import { checkSchema, param, oneOf } from 'express-validator';
+import mongoose from 'mongoose';
 
 export const userValidationSchema = checkSchema({
 	username: {
@@ -99,9 +100,9 @@ export const updateUserFieldsValidationSchema = checkSchema({
 });
 
 export const validateUserId = [
-	param('id')
-		.isInt()
-		.withMessage('ID must be an integer')
+	param('_id')
+		.custom((value) => mongoose.Types.ObjectId.isValid(value))
+		.withMessage('ID must be a valid MongoDB ObjectId')
 ];
 
 export const validateReservationParams = [
