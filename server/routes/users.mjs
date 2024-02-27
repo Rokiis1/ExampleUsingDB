@@ -22,10 +22,10 @@ router.patch('/:_id', validate(validateUserId, updateUserFieldsValidationSchema)
 
 router.delete('/:_id', validate(validateUserId) , userController.deleteUser);
 
-// router.get('/:id/reservations', validate(validateUserId) , userController.getUserReservations);
+router.get('/:_id/reservations', validate(validateUserId) , userController.getUserReservations);
 
-// router.post('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.createReservation);
+router.post('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.createReservation);
 
-// router.delete('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.deleteReservation);
+router.delete('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.deleteReservation);
 
 export default router;

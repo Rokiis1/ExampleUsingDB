@@ -31,10 +31,16 @@ const UserSchema = new mongoose.Schema({
 		// 	message: 'Email must be valid'
 		// }
 	},
+	// reservations: {
+	// 	type: [Number],
+	// 	default: []
+	// },
 	reservations: {
-		type: [Number],
+		type: [mongoose.Schema.Types.ObjectId],
+		ref: 'Book',
 		default: []
 	},
+	
 	registered_on: {
 		type: Date,
 		required: true,

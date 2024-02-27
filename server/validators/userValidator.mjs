@@ -107,9 +107,9 @@ export const validateUserId = [
 
 export const validateReservationParams = [
 	param('userId')
-		.isInt()
+		.custom((value) => mongoose.Types.ObjectId.isValid(value))
 		.withMessage('User ID must be an integer'),
 	param('bookId')
-		.isInt()
+		.custom((value) => mongoose.Types.ObjectId.isValid(value))
 		.withMessage('Book ID must be an integer')
 ];

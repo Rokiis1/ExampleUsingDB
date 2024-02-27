@@ -1,12 +1,26 @@
+import mongoose from 'mongoose';
 import User from '../model/userSchema.mjs'; // Update this path to the path of your User model
+import Book from '../model/bookSchema.mjs'; // Assuming you have a Book model
 import Session from '../model/sessionSchema.mjs'; // Assuming you have a Session model
 
 const userController = {
 
 	getUsers: async (req, res) => {
 		try {
-			const users = await User.find(); // Use Mongoose's find method to fetch all users
-			res.status(200).json(users);
+
+			if (req.query.paginate === 'true') {
+				const page = parseInt(req.query.page) || 1; // Default to page 1
+				const limit = parseInt(req.query.limit) || 3; // Default to 3 items per page
+
+				const users = await User.find()
+					.skip((page - 1) * limit)
+					.limit(limit);
+
+				res.status(200).json(users);
+			} else {
+				const users = await User.find(); // Use Mongoose's find method to fetch all users
+				res.status(200).json(users);
+			}
 		} catch (err) {
 			res.status(500).json({ message: 'An error occurred while fetching users.' });
 		}
@@ -157,132 +171,146 @@ const userController = {
 		}
 	},
 
-	// getUserReservations: (req, res) => {
-	//     try {
-	//         const id = parseInt(req.params.id);
-	//         const user = users.find(user => user.id === id);
+	getUserReservations: async (req, res) => {
+		try {
+			const id = req.params._id;
+			const user = await User.findById(id);
 
-	//         if (!user) {
-	//             res.status(404).json({ message: 'User not found.' });
-	//             return;
-	//         }
+			if (!user) {
+				res.status(404).json({ message: 'User not found.' });
+				return;
+			}
 
-	//         const reservedBooks = books.filter(book => user.reservations.includes(book.id));
+			const reservedBooks = await Book.find({ '_id': { $in: user.reservations } });
 
-	//         const reservedBooksInfo = reservedBooks.map(book => ({
-	//             id: book.id,
-	//             title: book.title,
-	//             author: book.author,
-	//             published_on: book.published_on
-	//         }));
+			const reservedBooksInfo = reservedBooks.map(book => ({
+				id: book._id,
+				title: book.title,
+				author: book.author,
+				published_on: book.published_on
+			}));
 
-	//         res.status(200).json(reservedBooksInfo);
-	//     } catch (err) {
-	//         res.status(500).json({ message: 'An error occurred while retrieving the user reservations.' });
-	//     }
-	// },
+			res.status(200).json(reservedBooksInfo);
+		} catch (err) {
+			res.status(500).json({ message: 'An error occurred while retrieving the user reservations.' });
+		}
+	},
 
-	// createReservation: async (req, res) => {
-	//     try {
+	createReservation: async (req, res) => {
+		try {
 
-	//         // Check if the user is logged in
-	//         if (!req.session.userId) {
-	//             res.status(401).json({ message: 'Please log in.' });
-	//             return;
-	//         }
+			// Check if the user is logged in
+			if (!req.session.userId) {
+				res.status(401).json({ message: 'Please log in.' });
+				return;
+			}
 
-	//         const userId = parseInt(req.params.userId);
-	//         const bookId = parseInt(req.params.bookId);
+			const userId = req.session.userId;
+			const bookId = req.params.bookId;
 
-	//         // Check if the logged-in user is the same as the user making the reservation
-	//         if (req.session.userId !== userId) {
-	//             res.status(403).json({ message: 'You can only make reservations for yourself.' });
-	//             return;
-	//         }
+			// console.log(`userId: ${userId}, bookId: ${bookId}`); // Debugging line
 
-	//         const user = users.find(user => user.id === userId);
-	//         const book = books.find(book => book.id === bookId);
+			// Fetch the user and the book from the database
+			const user = await User.findById(userId);
+			const book = await Book.findById(bookId);
 
-	//         if (!user || !book) {
-	//             res.status(404).json({ message: 'User or book not found.' });
-	//             return;
-	//         }
+			// console.log(`user: ${JSON.stringify(user)}, book: ${JSON.stringify(book)}`); // Debugging line
 
-	//         if (user.reservations.includes(bookId)) {
-	//             res.status(400).json({ message: 'Book is already reserved by the user.' });
-	//             return;
-	//         }
+			if (!user || !book) {
+				res.status(404).json({ message: 'User or book not found.' });
+				return;
+			}
 
-	//         if (book.quantity === 0 || !book.available) {
-	//             res.status(400).json({ message: 'Book is not available.' });
-	//             return;
-	//         }
+			// Ensure that the reservations field is present
+			if (!user.reservations) {
+				user.reservations = [];
+			}
 
-	//         user.reservations.push(bookId);
+			if (user.reservations && user.reservations.includes(bookId)) {
+				res.status(400).json({ message: 'Book is already reserved by the user.' });
+				return;
+			}
 
-	//         book.quantity--;
+			if (book.quantity === 0 || !book.available) {
+				res.status(400).json({ message: 'Book is not available.' });
+				return;
+			}
 
-	//         if (book.quantity === 0) {
-	//             book.available = false;
-	//         }
+			// In your createReservation function
+			if (user.reservations) {
+				user.reservations.addToSet(new mongoose.Types.ObjectId(bookId, { suppressWarning: true }));
+				await user.save();
+			} else {
+				res.status(500).json({ message: 'User does not have a reservations field.' });
+				return;
+			}
 
-	//         await fs.promises.writeFile(path.join(__dirname, '../../db/users.json'), JSON.stringify(users, null, 2));
+			// console.log(`user after save: ${JSON.stringify(user)}`); // Debugging line
 
-	//         await fs.promises.writeFile(path.join(__dirname, '../../db/books.json'), JSON.stringify(books, null, 2));
+			// Decrease the book's quantity and update its availability if necessary
+			book.quantity--;
 
-	//         res.status(200).json({ message: 'Book successfully reserved.' });
-	//     } catch (err) {
-	//         res.status(500).json({ message: 'An error occurred while creating the reservation.' });
-	//     }
-	// },
+			if (book.quantity === 0) {
+				book.available = false;
+			}
 
-	// deleteReservation: async (req, res) => {
-	//     try {
+			await book.save();
 
-	//         // Check if the user is logged in
-	//         if (!req.session.userId) {
-	//             res.status(401).json({ message: 'Please log in.' });
-	//             return;
-	//         }
+			// console.log(`book after save: ${JSON.stringify(book)}`); // Debugging line
 
-	//         const userId = parseInt(req.params.userId);
-	//         const bookId = parseInt(req.params.bookId);
+			res.status(200).json({ message: 'Book successfully reserved.' });
+		} catch (err) {
+			console.log(err); // Debugging line
+			res.status(500).json({ message: 'An error occurred while creating the reservation.' });
+		}
+	},
 
-	//         // Check if the logged-in user is the same as the user making the reservation
-	//         if (req.session.userId !== userId) {
-	//             res.status(403).json({ message: 'You can only make reservations for yourself.' });
-	//             return;
-	//         }
+	deleteReservation: async (req, res) => {
+		try {
 
-	//         const user = users.find(user => user.id === userId);
-	//         const book = books.find(book => book.id === bookId);
+			// Check if the user is logged in
+			if (!req.session.userId) {
+				res.status(401).json({ message: 'Please log in.' });
+				return;
+			}
 
-	//         if (!user || !book) {
-	//             res.status(404).json({ message: 'User or book not found.' });
-	//             return;
-	//         }
+			const userId = req.params.userId;
+			const bookId = req.params.bookId;
 
-	//         const reservationIndex = user.reservations.indexOf(bookId);
-	//         if (reservationIndex === -1) {
-	//             res.status(400).json({ message: 'Book is not reserved by the user.' });
-	//             return;
-	//         }
+			// Check if the logged-in user is the same as the user making the reservation
+			if (req.session.userId !== userId) {
+				res.status(403).json({ message: 'You can only make reservations for yourself.' });
+				return;
+			}
 
-	//         user.reservations.splice(reservationIndex, 1);
+			const user = await User.findById(userId);
+			const book = await Book.findById(bookId);
 
-	//         book.quantity++;
+			if (!user || !book) {
+				res.status(404).json({ message: 'User or book not found.' });
+				return;
+			}
 
-	//         book.available = true;
+			const reservationIndex = user.reservations.indexOf(bookId);
+			if (reservationIndex === -1) {
+				res.status(400).json({ message: 'Book is not reserved by the user.' });
+				return;
+			}
 
-	//         await fs.promises.writeFile(path.join(__dirname, '../../db/users.json'), JSON.stringify(users, null, 2));
+			user.reservations.pull(bookId);
+			await user.save();
 
-	//         await fs.promises.writeFile(path.join(__dirname, '../../db/books.json'), JSON.stringify(books, null, 2));
+			book.quantity++;
 
-	//         res.status(200).json({ message: 'Book successfully unreserved.' });
-	//     } catch (err) {
-	//         res.status(500).json({ message: 'An error occurred while deleting the reservation.' });
-	//     }
-	// }
+			book.available = true;
+
+			await book.save();
+
+			res.status(200).json({ message: 'Book successfully unreserved.' });
+		} catch (err) {
+			res.status(500).json({ message: 'An error occurred while deleting the reservation.' });
+		}
+	}
 };
 
 export default userController;
