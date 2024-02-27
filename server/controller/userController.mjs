@@ -14,9 +14,31 @@ const userController = {
 
     getUsers: (req, res) => {
         try {
-            res.status(200).json(users);
+            // const page = parseInt(req.query.page) || 1; // Default to page 1
+            // const limit = parseInt(req.query.limit) || 3; // Default to 10 items per page
+            // const start = (page - 1) * limit;
+            // const end = page * limit;
+    
+            // const paginatedUsers = users.slice(start, end);
+            // {{BASE_URI}}/users?paginate=true&page=1&limit=3
+            if (req.query.paginate === 'true') {
+                const page = parseInt(req.query.page) || 1; // Default to page 1
+                const limit = parseInt(req.query.limit) || 3; // Default to 10 items per page
+                // start - (page - 1) * limit = 0 - (1 - 1) * 3 = 0
+                // Why do we need to subtract 1 from page?
+                // If page is 1, we want to start at 0
+                const start = (page - 1) * limit;
+                const end = page * limit;
+    
+                const paginatedUsers = users.slice(start, end);
+    
+                res.status(200).json(paginatedUsers);
+            } else {
+                res.status(200).json(users);
+            }
         } catch (err) {
-            res.status(500).json({ message: 'An error occurred while fetching users.' });
+            console.error(err);
+            res.status(500).json({ message: 'An error occurred while retrieving users.' });
         }
     },
 
