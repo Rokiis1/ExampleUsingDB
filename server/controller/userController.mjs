@@ -14,9 +14,22 @@ const userController = {
 
     getUsers: (req, res) => {
         try {
-            res.status(200).json(users);
+            if (req.query.paginate === 'true') {
+                const page = parseInt(req.query.page) || 1; // Default to page 1
+                const limit = parseInt(req.query.limit) || 3; // Default to 10 items per page
+
+                const start = (page - 1) * limit;
+                const end = page * limit;
+    
+                const paginatedUsers = users.slice(start, end);
+    
+                res.status(200).json(paginatedUsers);
+            } else {
+                res.status(200).json(users);
+            }
         } catch (err) {
-            res.status(500).json({ message: 'An error occurred while fetching users.' });
+            console.error(err);
+            res.status(500).json({ message: 'An error occurred while retrieving users.' });
         }
     },
 
