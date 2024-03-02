@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import User from '../model/userSchema.mjs'; // Update this path to the path of your User model
 import Book from '../model/bookSchema.mjs'; // Assuming you have a Book model
 import Session from '../model/sessionSchema.mjs'; // Assuming you have a Session model
@@ -54,10 +53,8 @@ const userController = {
 				return;
 			}
 
-			// You should hash your passwords and compare the hashed values
-			// For simplicity, we're comparing the plain text passwords here
 			if (user.password !== password) {
-				res.status(401).json({ message: 'Invalid password.' });
+				res.status(401).json({ message: 'Invalid credentials.' });
 				return;
 			}
 
@@ -238,7 +235,7 @@ const userController = {
 
 			// In your createReservation function
 			if (user.reservations) {
-				user.reservations.addToSet(new mongoose.Types.ObjectId(bookId, { suppressWarning: true }));
+				user.reservations.addToSet(bookId);
 				await user.save();
 			} else {
 				res.status(500).json({ message: 'User does not have a reservations field.' });
