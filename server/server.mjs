@@ -7,7 +7,8 @@ import cookies from './middleware/cookies.mjs';
 import connectDB from './db/database.mjs'; // Import connectDB
 
 const app = express();
-const session = await setupSession;
+
+const session = await setupSession();
 
 // Connect to database
 connectDB();
