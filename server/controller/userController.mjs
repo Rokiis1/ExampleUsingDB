@@ -65,10 +65,15 @@ const userController = {
                 return;
             }
 
-            if (user.password !== password) {
-                res.status(401).json({ message: 'Invalid password.' });
-                return;
-            }
+            // if (user.password !== password) {
+            //     res.status(401).json({ message: 'Invalid password.' });
+            //     return;
+            // }
+
+			if (user.username !== username || user.email !== email || user.password !== password) {
+				res.status(401).json({ message: 'Invalid credentials.' });
+				return;
+			}
 
             // Store the user's ID in the session
             req.session.userId = user.id;

@@ -8,24 +8,24 @@ const router = express.Router();
 
 router.get('/', userController.getUsers);
 
-router.post('/register', validate(userValidationSchema) , userController.createUser);
+router.post('/register', validate(userValidationSchema), userController.createUser);
 
-router.post('/login', validate(loginValidationSchema) , userController.login);
+router.post('/login', validate(loginValidationSchema), userController.login);
 
 router.post('/logout', userController.logout);
 
-router.get('/:id', validate(validateUserId) , userController.getUserById);
+router.get('/:id', validate(validateUserId), userController.getUserById);
 
-router.put('/:id', validate(validateUserId, userValidationSchema) , userController.updateUser);
+router.put('/:id', validate(validateUserId, userValidationSchema), userController.updateUser);
 
-router.patch('/:id', validate(validateUserId, updateUserFieldsValidationSchema) , userController.updateUserFields);
+router.patch('/:id', validate(validateUserId, updateUserFieldsValidationSchema), userController.updateUserFields);
 
-router.delete('/:id', validate(validateUserId) , userController.deleteUser);
+router.delete('/:id', validate(validateUserId), userController.deleteUser);
 
-router.get('/:id/reservations', validate(validateUserId) , userController.getUserReservations);
+router.get('/:id/reservations', validate(validateUserId), userController.getUserReservations);
 
-router.post('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.createReservation);
+router.post('/:userId/reservations/:bookId', validate(validateReservationParams), userController.createReservation);
 
-router.delete('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.deleteReservation);
+router.delete('/:userId/reservations/:bookId', validate(validateReservationParams), userController.deleteReservation);
 
 export default router;

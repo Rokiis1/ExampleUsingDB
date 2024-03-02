@@ -9,8 +9,8 @@ export default session({
 	resave: false,
 	// what is saveUninitialized?
 	// SaveUninitialized is a boolean that specifies whether a new but unmodified session should be saved.
-	saveUninitialized: true,
+	saveUninitialized: false, 
 	// what is cookie?
 	// Cookie is an object that specifies the session cookie.
-	cookie: { secure: false }
+	cookie: { secure: false, maxAge: 60 * 60 * 1000 } // 1 hour
 });
