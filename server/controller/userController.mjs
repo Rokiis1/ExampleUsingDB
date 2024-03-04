@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt';
+
 import User from '../model/userSchema.mjs'; // Update this path to the path of your User model
 import Book from '../model/bookSchema.mjs'; // Assuming you have a Book model
 import Session from '../model/sessionSchema.mjs'; // Assuming you have a Session model
@@ -6,7 +8,6 @@ const userController = {
 
 	getUsers: async (req, res) => {
 		try {
-
 			if (req.query.paginate === 'true') {
 				const page = parseInt(req.query.page) || 1; // Default to page 1
 				const limit = parseInt(req.query.limit) || 3; // Default to 3 items per page
@@ -27,8 +28,19 @@ const userController = {
 
 	createUser: async (req, res) => {
 		try {
+			const {password, repeatPassword , ...otherUserFields} = req.body;
+
+			
+			if (password !== repeatPassword) {
+				res.status(400).json({ message: 'Passwords do not match.' });
+				return;
+			}
+
+			const hashedPassword = await bcrypt.hash(password, 10);
+
 			const newUser = new User({
-				...req.body,
+				...otherUserFields,
+				password: hashedPassword,
 				reservations: []
 			});
 
@@ -47,13 +59,15 @@ const userController = {
 
 			// Use Mongoose's findOne method to find the user in the database
 			const user = await User.findOne({ $or: [{ username }, { email }] });
-
+			console.log('user:', user);
 			if (!user) {
 				res.status(404).json({ message: 'User not found.' });
 				return;
 			}
 
-			if (user.password !== password) {
+			const isMatch = await bcrypt.compare(password, user.password);
+
+			if (!isMatch) {
 				res.status(401).json({ message: 'Invalid credentials.' });
 				return;
 			}
