@@ -1,8 +1,7 @@
 import bcrypt from 'bcrypt';
 
-import User from '../model/userSchema.mjs'; // Update this path to the path of your User model
-import Book from '../model/bookSchema.mjs'; // Assuming you have a Book model
-import Session from '../model/sessionSchema.mjs'; // Assuming you have a Session model
+import User from '../models/userSchema.mjs'; // Update this path to the path of your User model
+import Book from '../models/bookSchema.mjs'; // Assuming you have a Book model
 
 const userController = {
 
@@ -50,63 +49,6 @@ const userController = {
 		} catch (err) {
 			console.error(err);
 			res.status(500).json({ message: 'An error occurred while creating the user.' });
-		}
-	},
-
-	login: async (req, res) => {
-		try {
-			const { username, email, password } = req.body;
-
-			// Use Mongoose's findOne method to find the user in the database
-			const user = await User.findOne({ $or: [{ username }, { email }] });
-			console.log('user:', user);
-			if (!user) {
-				res.status(404).json({ message: 'User not found.' });
-				return;
-			}
-
-			const isMatch = await bcrypt.compare(password, user.password);
-
-			if (!isMatch) {
-				res.status(401).json({ message: 'Invalid credentials.' });
-				return;
-			}
-
-			// Store the user's ID in the session
-			req.session.userId = user._id;
-
-			res.status(200).json({ message: 'Logged in successfully.' });
-		} catch (err) {
-			console.error(err);
-			res.status(500).json({ message: 'An error occurred while logging in.' });
-		}
-	},
-
-	logout: async (req, res) => {
-		try {
-			// Check if the session exists
-			if (!req.session.userId) {
-				res.status(400).json({ message: 'No active session.' });
-				return;
-			}
-			// Destroy the session in MongoDB
-			await Session.findByIdAndDelete(req.sessionID);
-
-
-			// Destroy the session
-			req.session.destroy(err => {
-				if (err) {
-					console.error(err);
-					res.status(500).json({ message: 'An error occurred while logging out.' });
-					return;
-				}
-
-				// Send a successful logout message
-				res.status(200).json({ message: 'Logged out successfully.' });
-			});
-		} catch (err) {
-			console.error(err);
-			res.status(500).json({ message: 'An error occurred while logging out.' });
 		}
 	},
 
@@ -211,12 +153,12 @@ const userController = {
 		try {
 
 			// Check if the user is logged in
-			if (!req.session.userId) {
+			if (!req.user._id) {
 				res.status(401).json({ message: 'Please log in.' });
 				return;
 			}
 
-			const userId = req.session.userId;
+			const userId = req.user._id;
 			const bookId = req.params.bookId;
 
 			// console.log(`userId: ${userId}, bookId: ${bookId}`); // Debugging line
@@ -271,7 +213,7 @@ const userController = {
 
 			res.status(200).json({ message: 'Book successfully reserved.' });
 		} catch (err) {
-			console.log(err); // Debugging line
+			// console.log(err);
 			res.status(500).json({ message: 'An error occurred while creating the reservation.' });
 		}
 	},
@@ -280,7 +222,7 @@ const userController = {
 		try {
 
 			// Check if the user is logged in
-			if (!req.session.userId) {
+			if (!req.user._id) {
 				res.status(401).json({ message: 'Please log in.' });
 				return;
 			}
@@ -289,7 +231,7 @@ const userController = {
 			const bookId = req.params.bookId;
 
 			// Check if the logged-in user is the same as the user making the reservation
-			if (req.session.userId !== userId) {
+			if (req.user.userId !== userId) {
 				res.status(403).json({ message: 'You can only make reservations for yourself.' });
 				return;
 			}

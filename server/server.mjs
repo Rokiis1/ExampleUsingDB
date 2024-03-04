@@ -1,7 +1,10 @@
 import express from 'express';
-import session from 'express-session';
-import MongoStore from 'connect-mongo';
 import mongoose from 'mongoose';
+import passport from 'passport';
+import dotenv from 'dotenv';
+
+import localStrategy from './strategies/localStrategy.mjs';
+import jwtStrategy from './strategies/jwtStrategy.mjs';
 
 import usersRouter from './routes/index.mjs';
 import booksRouter from './routes/books.mjs';
@@ -9,25 +12,23 @@ import cookies from './middleware/cookies.mjs';
 
 const app = express();
 
+dotenv.config();
+
 app.use(cookies);
 
 app.use(express.json());
 
 const PORT = 3000;
 
+app.use(passport.initialize());
+
+passport.use(localStrategy);
+passport.use(jwtStrategy);
+
 async function startServer() {
 	try {
-		await mongoose.connect('mongodb+srv://admin:DJxb2WCBuHtQ1sNU@cluster0.qhdcopl.mongodb.net/');
+		await mongoose.connect(process.env.MONGODB_URI);
 		console.log('MongoDB connected...');
-		const client = mongoose.connection.getClient();
-
-		app.use(session({
-			secret: 'mySecret',
-			resave: false,
-			saveUninitialized: false,
-			cookie: { secure: false, maxAge: 60 * 60 * 1000 },
-			store: MongoStore.create({ clientPromise: Promise.resolve(client) })
-		}));
 
 		app.use('/api/v1/library', usersRouter);
 		app.use('/api/v1/library', booksRouter);

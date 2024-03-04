@@ -1,4 +1,4 @@
-import Book from '../model/bookSchema.mjs';
+import Book from '../models/bookSchema.mjs';
 
 const booksController = {
 
