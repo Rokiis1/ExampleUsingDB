@@ -24,23 +24,17 @@ const UserSchema = new mongoose.Schema({
 		type: String,
 		required: [true, 'Email cannot be empty'],
 		unique: true,
-		// validate: {
-		// 	validator: function(v) {
-		// 		return /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(v);
-		// 	},
-		// 	message: 'Email must be valid'
-		// }
 	},
-	// reservations: {
-	// 	type: [Number],
-	// 	default: []
-	// },
 	reservations: {
 		type: [mongoose.Schema.Types.ObjectId],
 		ref: 'Book',
 		default: []
 	},
-	
+	role: {
+		type: String,
+		enum: ['user', 'admin'], // Define the possible roles here
+		default: 'user'
+	},
 	registered_on: {
 		type: Date,
 		required: true,
