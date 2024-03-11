@@ -98,11 +98,11 @@ export const updateUserFieldsValidationSchema = checkSchema({
 	},
 });
 
-// export const validateUserId = [
-// 	param('_id')
-// 		.custom((value) => mongoose.Types.ObjectId.isValid(value))
-// 		.withMessage('ID must be a valid MongoDB ObjectId')
-// ];
+export const validateUserId = [
+	param('id')
+		.isInt()
+		.withMessage('ID must be an integer')
+];
 
 export const validateReservationParams = [
 	param('userId')

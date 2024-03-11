@@ -95,8 +95,49 @@ const userModel = {
 
 		await pool.query('UPDATE books SET quantity = $1, available = $2 WHERE id = $3', [book.quantity, book.available, bookId]);
 
-		return {user, book};
+		return { user, book };
+	},
+
+	getUserById: async (id) => {
+		const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+		return result.rows[0];
+	},
+
+	getUserReservations: async (userId) => {
+		const result = await pool.query('SELECT books.* FROM users JOIN reservations ON users.id = reservations.user_id JOIN books ON reservations.book_id = books.id WHERE users.id = $1', [userId]);
+		return result.rows;
+	},
+
+	updateUser: async (id, updatedUser) => {
+		const { username, password, email } = updatedUser;
+		const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
+		const result = await pool.query('UPDATE users SET username = $1, password = $2, email = $3 WHERE id = $4 RETURNING *', [username, hashedPassword, email, id]);
+		return result.rows[0];
+	},
+
+	updateUserFields: async (id, updatedFields) => {
+		const setFields = Object.keys(updatedFields).map((key, i) => `${key} = $${i + 1}`).join(', ');
+		const values = Object.values(updatedFields);
+		values.push(id);
+		const result = await pool.query(`UPDATE users SET ${setFields} WHERE id = $${values.length} RETURNING *`, values);
+		return result.rows[0];
+	},
+
+	deleteUser: async (id) => {
+		// Get all the reservations of the user
+		const reservations = await pool.query('SELECT * FROM reservations WHERE user_id = $1', [id]);
+		// Return all the books associated with the reservations
+		for (let reservation of reservations.rows) {
+			await pool.query('UPDATE books SET status = $1 WHERE id = $2', ['available', reservation.book_id]);
+		}
+		// Delete the reservations
+		await pool.query('DELETE FROM reservations WHERE user_id = $1', [id]);
+
+		// Delete the user
+		const result = await pool.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
+		return result.rows[0];
 	}
+	
 };
 
 export default userModel;

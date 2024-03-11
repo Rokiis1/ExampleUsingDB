@@ -2,7 +2,7 @@
 import express from 'express';
 import userController from '../controller/userController.mjs';
 // import { userValidationSchema, updateUserFieldsValidationSchema, validateReservationParams, validateUserId } from '../validators/userValidator.mjs';
-import { userValidationSchema, loginValidationSchema, validateReservationParams } from '../validators/userValidator.mjs';
+import { userValidationSchema, loginValidationSchema, validateReservationParams, validateUserId, updateUserFieldsValidationSchema } from '../validators/userValidator.mjs';
 
 import { validate } from '../middleware/schemaValidator.mjs';
 
@@ -14,18 +14,18 @@ router.post('/register', validate(userValidationSchema) , userController.createU
 
 router.post('/login', validate(loginValidationSchema) , userController.login);
 
-// router.get('/:_id', validate(validateUserId), userController.getUserById);
+router.get('/:id', validate(validateUserId), userController.getUserById);
 
-// router.put('/:_id', validate(validateUserId, userValidationSchema) , userController.updateUser);
+router.put('/:id', validate(validateUserId, userValidationSchema) , userController.updateUser);
 
-// router.patch('/:_id', validate(validateUserId, updateUserFieldsValidationSchema) , userController.updateUserFields);
+router.patch('/:id', validate(validateUserId, updateUserFieldsValidationSchema) , userController.updateUserFields);
 
-// router.delete('/:_id', validate(validateUserId) , userController.deleteUser);
+router.delete('/:id', validate(validateUserId) , userController.deleteUser);
 
-// router.get('/:_id/reservations', validate(validateUserId) , userController.getUserReservations);
+router.get('/:id/reservations', validate(validateUserId) , userController.getUserReservations);
 
 router.post('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.createReservation);
 
-// router.delete('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.deleteReservation);
+router.delete('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.deleteReservation);
 
 export default router;

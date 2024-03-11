@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt';
 
 import userModel from '../model/userModel.mjs'; // Update this path to the path of your User model
+import reservationModel from '../model/reservationModel.mjs';
+import bookModel from '../model/bookModel.mjs';
 
 const userController = {
 
@@ -63,102 +65,110 @@ const userController = {
 		}
 	},
 
-	// getUserById: async (req, res) => {
-	// 	try {
-	// 		const id = req.params._id; // No need to parse as integer
-	// 		const user = await User.findById(id);
+	getUserById: async (req, res) => {
+		try {
+			const id = req.params.id;
+			const user = await userModel.getUserById(id);
 
-	// 		if (!user) {
-	// 			res.status(404).json({ message: 'User not found.' });
-	// 			return;
-	// 		}
+			if (!user) {
+				res.status(404).json({ message: 'User not found.' });
+				return;
+			}
 
-	// 		res.status(200).json(user);
-	// 	} catch (err) {
-	// 		res.status(500).json({ message: 'An error occurred while retrieving the user.' });
-	// 	}
-	// },
+			res.status(200).json(user);
+		} catch (err) {
+			res.status(500).json({ message: 'An error occurred while retrieving the user.' });
+		}
+	},
 
-	// updateUser: async (req, res) => {
-	// 	try {
-	// 		const id = req.params._id;
-	// 		const updatedUser = { ...req.body, id };
+	updateUser: async (req, res) => {
+		try {
+			const id = req.params.id;
+			const updatedUser = req.body;
 
-	// 		const user = await User.findByIdAndUpdate(id, updatedUser, { new: true, overwrite: true });
+			const email = req.body.email;
 
-	// 		if (!user) {
-	// 			res.status(404).json({ message: 'User not found.' });
-	// 			return;
-	// 		}
+			const existingUser = await userModel.getUserByEmail(email);
+			if (existingUser) {
+				res.status(400).json({ message: 'Email already exists.' });
+				return;
+			}
 
-	// 		res.status(200).json(user);
-	// 	} catch (err) {
-	// 		console.error(err);
-	// 		res.status(500).json({ message: 'An error occurred while updating the user.' });
-	// 	}
-	// },
+			const user = await userModel.updateUser(id, updatedUser);
 
-	// updateUserFields: async (req, res) => {
-	// 	try {
-	// 		const id = req.params._id;
-	// 		const updatedFields = req.body;
+			if (!user) {
+				res.status(404).json({ message: 'User not found.' });
+				return;
+			}
 
-	// 		const user = await User.findByIdAndUpdate(id, updatedFields, { new: true });
+			res.status(200).json(user);
+		} catch (err) {
+			console.error(err);
+			res.status(500).json({ message: 'An error occurred while updating the user.' });
+		}
+	},
 
-	// 		if (!user) {
-	// 			res.status(404).json({ message: 'User not found.' });
-	// 			return;
-	// 		}
+	updateUserFields: async (req, res) => {
+		try {
+			const id = req.params.id;
+			const updatedFields = req.body;
 
-	// 		res.status(200).json(user);
-	// 	} catch (err) {
-	// 		console.error(err);
-	// 		res.status(500).json({ message: 'An error occurred while updating the user.' });
-	// 	}
-	// },
+			const user = await userModel.updateUserFields(id, updatedFields);
 
-	// deleteUser: async (req, res) => {
-	// 	try {
-	// 		const id = req.params._id;
+			if (!user) {
+				res.status(404).json({ message: 'User not found.' });
+				return;
+			}
 
-	// 		const user = await User.findByIdAndDelete(id);
+			res.status(200).json(user);
+		} catch (err) {
+			console.error(err);
+			res.status(500).json({ message: 'An error occurred while updating the user.' });
+		}
+	},
 
-	// 		if (!user) {
-	// 			res.status(404).json({ message: 'User not found.' });
-	// 			return;
-	// 		}
+	deleteUser: async (req, res) => {
+		try {
+			const id = req.params.id;
 
-	// 		res.status(200).json({ message: 'User deleted successfully.' });
-	// 	} catch (err) {
-	// 		console.error(err);
-	// 		res.status(500).json({ message: 'An error occurred while deleting the user.' });
-	// 	}
-	// },
+			const user = await userModel.deleteUser(id);
 
-	// getUserReservations: async (req, res) => {
-	// 	try {
-	// 		const id = req.params._id;
-	// 		const user = await User.findById(id);
+			if (!user) {
+				res.status(404).json({ message: 'User not found.' });
+				return;
+			}
 
-	// 		if (!user) {
-	// 			res.status(404).json({ message: 'User not found.' });
-	// 			return;
-	// 		}
+			res.status(200).json({ message: 'User deleted successfully.' });
+		} catch (err) {
+			console.error(err);
+			res.status(500).json({ message: 'An error occurred while deleting the user.' });
+		}
+	},
 
-	// 		const reservedBooks = await Book.find({ '_id': { $in: user.reservations } });
+	getUserReservations: async (req, res) => {
+		try {
+			const id = req.params.id;
+			const user = await userModel.getUserById(id);
 
-	// 		const reservedBooksInfo = reservedBooks.map(book => ({
-	// 			id: book._id,
-	// 			title: book.title,
-	// 			author: book.author,
-	// 			published_on: book.published_on
-	// 		}));
+			if (!user) {
+				res.status(404).json({ message: 'User not found.' });
+				return;
+			}
 
-	// 		res.status(200).json(reservedBooksInfo);
-	// 	} catch (err) {
-	// 		res.status(500).json({ message: 'An error occurred while retrieving the user reservations.' });
-	// 	}
-	// },
+			const reservedBooks = await userModel.getUserReservations(id);
+
+			const reservedBooksInfo = reservedBooks.map(book => ({
+				id: book.id,
+				title: book.title,
+				author: book.author,
+				published_on: book.published_on
+			}));
+
+			res.status(200).json(reservedBooksInfo);
+		} catch (err) {
+			res.status(500).json({ message: 'An error occurred while retrieving the user reservations.' });
+		}
+	},
 
 	createReservation: async (req, res) => {
 		try {
@@ -174,52 +184,39 @@ const userController = {
 		}
 	},
 
-	// deleteReservation: async (req, res) => {
-	// 	try {
+	deleteReservation: async (req, res) => {
+		try {
 
-	// 		// Check if the user is logged in
-	// 		if (!req.session.userId) {
-	// 			res.status(401).json({ message: 'Please log in.' });
-	// 			return;
-	// 		}
+			const userId = req.params.userId;
+			const bookId = req.params.bookId;
 
-	// 		const userId = req.params.userId;
-	// 		const bookId = req.params.bookId;
+			const user = await userModel.getUserById(userId);
+			const book = await bookModel.getBookById(bookId);
 
-	// 		// Check if the logged-in user is the same as the user making the reservation
-	// 		if (req.session.userId !== userId) {
-	// 			res.status(403).json({ message: 'You can only make reservations for yourself.' });
-	// 			return;
-	// 		}
+			if (!user || !book) {
+				res.status(404).json({ message: 'User or book not found.' });
+				return;
+			}
 
-	// 		const user = await User.findById(userId);
-	// 		const book = await Book.findById(bookId);
+			const reservation = await reservationModel.getReservationByUserAndBook(userId, bookId);
+			
+			if (!reservation) {
+				res.status(400).json({ message: 'Book is not reserved by the user.' });
+				return;
+			}
 
-	// 		if (!user || !book) {
-	// 			res.status(404).json({ message: 'User or book not found.' });
-	// 			return;
-	// 		}
+			await reservationModel.deleteReservation(reservation.id);
 
-	// 		const reservationIndex = user.reservations.indexOf(bookId);
-	// 		if (reservationIndex === -1) {
-	// 			res.status(400).json({ message: 'Book is not reserved by the user.' });
-	// 			return;
-	// 		}
+			await bookModel.incrementBookQuantity(bookId);
 
-	// 		user.reservations.pull(bookId);
-	// 		await user.save();
+			await bookModel.updateBookAvailability(bookId, true);
 
-	// 		book.quantity++;
-
-	// 		book.available = true;
-
-	// 		await book.save();
-
-	// 		res.status(200).json({ message: 'Book successfully unreserved.' });
-	// 	} catch (err) {
-	// 		res.status(500).json({ message: 'An error occurred while deleting the reservation.' });
-	// 	}
-	// }
+			res.status(200).json({ message: 'Book successfully unreserved.' });
+		} catch (err) {
+			console.error(err);
+			res.status(500).json({ message: 'An error occurred while deleting the reservation.' });
+		}
+	}
 };
 
 export default userController;
