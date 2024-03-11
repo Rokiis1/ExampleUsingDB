@@ -2,27 +2,31 @@ import express from 'express';
 
 import usersRouter from './routes/index.mjs';
 import booksRouter from './routes/books.mjs';
-import setupSession from './middleware/session.mjs';
+import authorsRouter from './routes/authors.mjs';
 import cookies from './middleware/cookies.mjs';
-import connectDB from './db/database.mjs'; // Import connectDB
+import { connectDB } from './db/postgresConnection.mjs'; // Import connectDB
 
 const app = express();
 
-const session = await setupSession();
+const startServer = async () => {
+	try {
+		const message = await connectDB();
+		console.log(message);
 
-// Connect to database
-connectDB();
+		app.use(cookies);
+		app.use(express.json());
 
-app.use(cookies);
-app.use(session);
+		app.use('/api/v1/library', usersRouter, booksRouter, authorsRouter);
 
-app.use(express.json());
+		const port = 3000;
 
-app.use('/api/v1/library', usersRouter);
-app.use('/api/v1/library', booksRouter);
+		app.listen(port, () => {
+			console.log(`Server is running and listening on port ${port}`);
+		});
 
-const port = 3000;
+	} catch (error) {
+		console.error('Failed to connect to database', error);
+	}
+};
 
-app.listen(port, () => {
-	console.log(`Server is running and listening on port ${port}`);
-});
+startServer();

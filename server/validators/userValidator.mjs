@@ -1,5 +1,4 @@
 import { checkSchema, param, oneOf } from 'express-validator';
-import mongoose from 'mongoose';
 
 export const userValidationSchema = checkSchema({
 	username: {
@@ -99,17 +98,17 @@ export const updateUserFieldsValidationSchema = checkSchema({
 	},
 });
 
-export const validateUserId = [
-	param('_id')
-		.custom((value) => mongoose.Types.ObjectId.isValid(value))
-		.withMessage('ID must be a valid MongoDB ObjectId')
-];
+// export const validateUserId = [
+// 	param('_id')
+// 		.custom((value) => mongoose.Types.ObjectId.isValid(value))
+// 		.withMessage('ID must be a valid MongoDB ObjectId')
+// ];
 
 export const validateReservationParams = [
 	param('userId')
-		.custom((value) => mongoose.Types.ObjectId.isValid(value))
+		.isInt()
 		.withMessage('User ID must be an integer'),
 	param('bookId')
-		.custom((value) => mongoose.Types.ObjectId.isValid(value))
+		.isInt()
 		.withMessage('Book ID must be an integer')
 ];
