@@ -31,6 +31,21 @@ const bookModel = {
 		}
 	},
 
+	searchBooksByTitle: async (title) => {
+		try {
+			const result = await pool.query(`
+				SELECT books.*, authors.name AS author_name
+				FROM books
+				INNER JOIN authors ON books.author_id = authors.id
+				WHERE books.title LIKE $1
+			`, [`%${title}%`]);
+			return result.rows;
+		} catch (error) {
+			console.error('An error occurred while searching for books.', error);
+			throw error;
+		}
+	},
+
 	createBook: async (bookData) => {
 		const client = await pool.connect();
 		try {
@@ -65,5 +80,7 @@ const bookModel = {
 		await pool.query('UPDATE books SET available = $1 WHERE id = $2', [available, id]);
 	}
 };
+
+
 
 export default bookModel;

@@ -11,6 +11,27 @@ const booksController = {
 		}
 	},
 
+	searchBooksByTitle: async (req, res) => {
+		try {
+			const title = req.query.title;
+			console.log(title);
+			if (!title) {
+				res.status(400).json({ message: 'Title is required.' });
+				return;
+			}
+			const books = await bookModel.searchBooksByTitle(title);
+			if (books.length === 0) {
+				res.status(404).json({ message: 'No books found.' });
+				return;
+			}
+
+			res.status(200).json(books);
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ message: 'An error occurred while fetching books.' });
+		}
+	},
+
 	createBook: async (req, res) => {
 		try {
 			const book = await bookModel.createBook(req.body);
