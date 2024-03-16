@@ -1,10 +1,21 @@
 import express from 'express';
+import dotenv from 'dotenv';
+
+if (process.env.NODE_ENV === 'production') {
+	dotenv.config({ path: '.env.production' });
+} else {
+	dotenv.config({ path: '.env.local' });
+}
+
+import { connectDB } from './db/postgresConnection.mjs'; // Import connectDB
+
+import passport from './strategies/auth.mjs';
 
 import usersRouter from './routes/index.mjs';
 import booksRouter from './routes/books.mjs';
 import authorsRouter from './routes/authors.mjs';
+
 import cookies from './middleware/cookies.mjs';
-import { connectDB } from './db/postgresConnection.mjs'; // Import connectDB
 
 const app = express();
 
@@ -16,9 +27,11 @@ const startServer = async () => {
 		app.use(cookies);
 		app.use(express.json());
 
+		app.use(passport.initialize());
+
 		app.use('/api/v1/library', usersRouter, booksRouter, authorsRouter);
 
-		const port = 3000;
+		const port = process.env.PORT;
 
 		app.listen(port, () => {
 			console.log(`Server is running and listening on port ${port}`);
@@ -26,6 +39,8 @@ const startServer = async () => {
 
 	} catch (error) {
 		console.error('Failed to connect to database', error);
+
+		process.exit(1);
 	}
 };
 

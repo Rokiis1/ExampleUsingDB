@@ -1,4 +1,4 @@
-import { checkSchema, param, oneOf } from 'express-validator';
+import { checkSchema, param } from 'express-validator';
 
 export const userValidationSchema = checkSchema({
 	username: {
@@ -36,30 +36,19 @@ export const userValidationSchema = checkSchema({
 	},
 });
 
-export const loginValidationSchema =  [
-	oneOf([
-		checkSchema({
-			username: {
-				notEmpty: {
-					errorMessage: 'Username cannot be empty',
-				},
-				isString: {
-					errorMessage: 'Username must be a string!',
-				},
-			},
-		}),
-		checkSchema({
-			email: {
-				notEmpty: {
-					errorMessage: 'Email cannot be empty',
-				},
-				isEmail: {
-					errorMessage: 'Email must be valid',
-				},
-			},
-		}),
-	], 'Either username or email must be provided'),
+export const loginValidationSchema = [
 	checkSchema({
+		login: {
+			notEmpty: {
+				errorMessage: 'Login cannot be empty',
+			},
+			custom: {
+				options: (value) => {
+					return value.includes('@') ? checkSchema({ email: { isEmail: true } }) : typeof value === 'string';
+				},
+				errorMessage: 'Login must be a valid email or a username',
+			},
+		},
 		password: {
 			notEmpty: {
 				errorMessage: 'Password cannot be empty',

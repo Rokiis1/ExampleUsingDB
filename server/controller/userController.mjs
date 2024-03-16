@@ -18,7 +18,7 @@ const userController = {
 
 	createUser: async (req, res) => {
 		try {
-			const { username, password, repeatPassword, email} = req.body;
+			const { username, password, repeatPassword, email, role = 'user'} = req.body;
 
 			const existingUser = await userModel.getUserByEmail(email);
 			if (existingUser) {
@@ -38,7 +38,8 @@ const userController = {
 				password: hashedPassword,
 				email,
 				registered_on: new Date(),
-				reservations: []
+				reservations: [],
+				role
 			};
 
 			const createdUser = await userModel.createUser(newUser);
@@ -52,8 +53,9 @@ const userController = {
 
 	login: async (req, res) => {
 		try {
-			
-			const user = await userModel.login(req.body);
+			const { email, username } = req.body;
+
+			const user = await userModel.login({ username, email });
 			
 			res.status(200).json({ message: 'Logged in successfully.', user });	
 		} catch (err) {

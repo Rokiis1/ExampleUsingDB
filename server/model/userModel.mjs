@@ -20,9 +20,9 @@ const userModel = {
 
 	createUser: async (newUser) => {
 		try {
-			const { username, password, email, registered_on } = newUser;
+			const { username, password, email, registered_on, role = 'user' } = newUser;
 
-			const result = await pool.query('INSERT INTO users (username, password, email, registered_on) VALUES ($1, $2, $3, $4) RETURNING *', [username, password, email, registered_on]);
+			const result = await pool.query('INSERT INTO users (username, password, email, registered_on, role) VALUES ($1, $2, $3, $4, $5) RETURNING *', [username, password, email, registered_on, role]);
 			return result.rows[0];
 		} catch (error) {
 			console.error(error);
@@ -30,7 +30,7 @@ const userModel = {
 		}
 	},
 
-	getUserByEmail: async (email) => {
+	getUserByEmail: async ({email}) => {
 		try {
 			const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 			return result.rows[0];
@@ -40,7 +40,7 @@ const userModel = {
 		}
 	},
 
-	login: async ({ username, email, password }) => {
+	login: async ({ username, email }) => {
 		const userResult = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
 
 		if (userResult.rows.length === 0) {
@@ -48,17 +48,6 @@ const userModel = {
 		}
 
 		const user = userResult.rows[0];
-
-		const match = await bcrypt.compare(password, user.password);
-
-		if (!match) {
-			throw new Error('Invalid credentials.');
-		}
-
-		// if (user.rows[0].password !== password) {
-		// 	res.status(401).json({ message: 'Invalid credentials.' });
-		// 	return;
-		// }
 
 		return user;
 	},
@@ -84,8 +73,8 @@ const userModel = {
 		if (book.quantity === 0 || !book.available) {
 			throw new Error('Book is not available.');
 		}
-
-		await pool.query('INSERT INTO reservations (user_id, book_id) VALUES ($1, $2)', [userId, bookId]);
+		// 'INSERT INTO reservations (user_id, book_id) VALUES ($1, $2)', [userId, bookId]
+		await pool.query('INSERT INTO reservations user_id = $1, book_id = $2', [userId, bookId]);
 
 		book.quantity--;
 
