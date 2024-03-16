@@ -24,18 +24,18 @@ router.post('/login', validate(loginValidationSchema) , passport.authenticate('l
 	res.status(200).json({ message: 'Logged in successfully.', token });
 } , userController.login);
 
-router.get('/:id', validate(validateUserId), userController.getUserById);
+router.get('/:id', validate(validateUserId), isUser, userController.getUserById);
 
-router.put('/:id', validate(validateUserId, userValidationSchema) , userController.updateUser);
+router.put('/:id', validate(validateUserId, isUser, userValidationSchema) , userController.updateUser);
 
-router.patch('/:id', validate(validateUserId, updateUserFieldsValidationSchema) , userController.updateUserFields);
+router.patch('/:id', validate(validateUserId, isUser, updateUserFieldsValidationSchema) , userController.updateUserFields);
 
-router.delete('/:id', validate(validateUserId) , userController.deleteUser);
+router.delete('/:id', validate(validateUserId), isUser, userController.deleteUser);
 
-router.get('/:id/reservations', validate(validateUserId) , userController.getUserReservations);
+router.get('/:id/reservations', validate(validateUserId), isUser, userController.getUserReservations);
 
-router.post('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.createReservation);
+router.post('/:userId/reservations/:bookId', validate(validateReservationParams), isUser, userController.createReservation);
 
-router.delete('/:userId/reservations/:bookId', validate(validateReservationParams) , userController.deleteReservation);
+router.delete('/:userId/reservations/:bookId', validate(validateReservationParams), isUser, userController.deleteReservation);
 
 export default router;

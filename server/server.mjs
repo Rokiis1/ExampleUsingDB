@@ -16,6 +16,7 @@ import booksRouter from './routes/books.mjs';
 import authorsRouter from './routes/authors.mjs';
 
 import cookies from './middleware/cookies.mjs';
+import { generalLimiter } from './middleware/rateLimit.mjs';
 
 const app = express();
 
@@ -29,7 +30,7 @@ const startServer = async () => {
 
 		app.use(passport.initialize());
 
-		app.use('/api/v1/library', usersRouter, booksRouter, authorsRouter);
+		app.use('/api/v1/library', generalLimiter, usersRouter, booksRouter, authorsRouter);
 
 		const port = process.env.PORT;
 
