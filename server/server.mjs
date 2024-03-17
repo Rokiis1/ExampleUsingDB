@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors'; // import cors
 
 if (process.env.NODE_ENV === 'production') {
 	dotenv.config({ path: '.env.production' });
@@ -19,6 +20,13 @@ import cookies from './middleware/cookies.mjs';
 import { generalLimiter } from './middleware/rateLimit.mjs';
 
 const app = express();
+
+// Set up CORS options
+const corsOptions = {
+	origin: 'http://localhost:5173', // Allow the React app to connect to the server
+};
+  
+app.use(cors(corsOptions)); // use cors as a middleware with options
 
 const startServer = async () => {
 	try {

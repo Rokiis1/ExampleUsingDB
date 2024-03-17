@@ -1,4 +1,5 @@
 import { checkSchema, param } from 'express-validator';
+import userModel from '../models/userModel.mjs';
 
 export const userValidationSchema = checkSchema({
 	username: {
@@ -32,6 +33,14 @@ export const userValidationSchema = checkSchema({
 		},
 		notEmpty: {
 			errorMessage: 'Email cannot be empty',
+		},
+		custom: {
+			options: async (value) => {
+				const existingUser = await userModel.getUserByEmail({ email: value });
+				if (existingUser) {
+					throw new Error('Email already exists.');
+				}
+			},
 		},
 	},
 });

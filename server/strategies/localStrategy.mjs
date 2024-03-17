@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Strategy as LocalStrategy } from 'passport-local';
 
-import userModel from '../model/userModel.mjs';
+import userModel from '../models/userModel.mjs';
 
 const localStrategy = new LocalStrategy({
 	usernameField: 'login',

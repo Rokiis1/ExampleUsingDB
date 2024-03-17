@@ -1,4 +1,4 @@
-import bookModel from '../model/bookModel.mjs';
+import bookModel from '../models/bookModel.mjs';
 
 const booksController = {
 

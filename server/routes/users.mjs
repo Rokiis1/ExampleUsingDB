@@ -8,6 +8,7 @@ import userController from '../controller/userController.mjs';
 import { userValidationSchema, loginValidationSchema, validateReservationParams, validateUserId, updateUserFieldsValidationSchema } from '../validators/userValidator.mjs';
 
 import { validate } from '../middleware/schemaValidator.mjs';
+import { validationResult } from 'express-validator';
 import passport from '../strategies/auth.mjs';
 import { isAdmin, isUser } from '../middleware/roleCheck.mjs';
 
@@ -17,7 +18,13 @@ const router = express.Router();
 
 router.get('/', isAdmin , userController.getUsers);
 
-router.post('/register', validate(userValidationSchema) , userController.createUser);
+router.post('/register', userValidationSchema, (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+	next();
+} , userController.createUser);
 
 router.post('/login', validate(loginValidationSchema) , passport.authenticate('local', { session: false }), isUser , (req, res) => {
 	const token = jwt.sign({ id: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });

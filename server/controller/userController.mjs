@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 
-import userModel from '../model/userModel.mjs'; // Update this path to the path of your User model
-import reservationModel from '../model/reservationModel.mjs';
-import bookModel from '../model/bookModel.mjs';
+import userModel from '../models/userModel.mjs'; // Update this path to the path of your User model
+import reservationModel from '../models/reservationModel.mjs';
+import bookModel from '../models/bookModel.mjs';
 
 const userController = {
 
