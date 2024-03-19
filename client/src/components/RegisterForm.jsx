@@ -27,7 +27,7 @@ function RegisterForm() {
       setSuccessMessage('Registration successful!'); // This line is now inside the try block
       reset();
     } catch (error) {
-      console.log(error.response.data); // Add this line
+      // console.log(error.response.data); // Add this line
       if (error.response && error.response.status === 400) {
         setError('email', {
           type: 'manual',

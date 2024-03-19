@@ -41,7 +41,7 @@ router.delete('/:id', validate(validateUserId), isUser, userController.deleteUse
 
 router.get('/:id/reservations', validate(validateUserId), isUser, userController.getUserReservations);
 
-router.post('/:userId/reservations/:bookId', validate(validateReservationParams), isUser, userController.createReservation);
+router.post('/:userId/reservations/:bookId', validate(validateReservationParams), passport.authenticate('jwt', { session: false }), isUser, userController.createReservation);
 
 router.delete('/:userId/reservations/:bookId', validate(validateReservationParams), isUser, userController.deleteReservation);
 

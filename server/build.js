@@ -8,4 +8,5 @@ build({
 	target: 'node16', // Adjust this to your Node.js version
 	outfile: './dist/server.js',
 	format: 'esm',  // Set the output format to "esm"
+	external: ['mock-aws-s3', 'aws-sdk', 'nock', '@mapbox/node-pre-gyp']  // Add this line
 }).catch(() => process.exit(1));

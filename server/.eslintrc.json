@@ -14,11 +14,7 @@
             "error",
             "tab"
         ],
-        "linebreak-style": [
-            "error",
-            "windows"
-        ],
-        // "linebreak-style": "off",
+        "linebreak-style": "off",
         "quotes": [
             "error",
             "single"
