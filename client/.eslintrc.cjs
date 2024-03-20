@@ -35,6 +35,6 @@ module.exports = {
     ],
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     'react/prop-types': 0,
-    'prettier/prettier': 'error', // Add this line
+    'prettier/prettier': ['error', { endOfLine: 'auto' }], // Updated this line
   },
 };

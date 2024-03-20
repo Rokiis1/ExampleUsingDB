@@ -28,6 +28,8 @@ const corsOptions = {
   
 app.use(cors(corsOptions)); // use cors as a middleware with options
 
+app.use(express.static('public'));
+
 const startServer = async () => {
 	try {
 		const message = await connectDB();

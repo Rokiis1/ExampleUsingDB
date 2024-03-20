@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom'; // import useNavigate
 
 import { registerUser } from '../api/apis';
 
@@ -9,10 +10,11 @@ function RegisterForm() {
     handleSubmit,
     formState: { errors },
     setError,
-    reset,
   } = useForm();
   const [serverError, setServerError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+
+  const navigate = useNavigate(); // initialize useNavigate
 
   const onSubmit = async (data) => {
     if (data.password !== data.repeatPassword) {
@@ -25,7 +27,7 @@ function RegisterForm() {
     try {
       await registerUser(data);
       setSuccessMessage('Registration successful!'); // This line is now inside the try block
-      reset();
+      navigate('/login'); // navigate to login page after successful registration
     } catch (error) {
       // console.log(error.response.data); // Add this line
       if (error.response && error.response.status === 400) {
