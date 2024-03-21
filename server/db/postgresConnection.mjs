@@ -1,7 +1,11 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '.env.local' });
+if (process.env.NODE_ENV === 'production') {
+	dotenv.config({ path: '.env.production' });
+} else {
+	dotenv.config({ path: '.env.local' });
+}
 
 const { Pool } = pg;
 
@@ -12,8 +16,11 @@ export const pool = new Pool({
 	password: process.env.DB_PASSWORD,
 	port: 5432,
 	max: 20,
-	connectionTimeoutMillis: 2000,
+	connectionTimeoutMillis: 5000,
 	idleTimeoutMillis: 30000,
+	ssl: {
+		rejectUnauthorized: false
+	}
 });
 
 // const connectDB = () => {
