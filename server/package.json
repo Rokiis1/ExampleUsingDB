@@ -5,9 +5,9 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "cross-env NODE_ENV=local nodemon server.mjs",
-    "start:prod": "cross-env NODE_ENV=production node server.mjs",
-    "build:prod": "cross-env NODE_ENV=production node build.mjs",
+    "dev": "nodemon server.mjs",
+    "start:prod": "node server.mjs",
+    "build:prod": "node build.mjs",
     "lint": "eslint . --ext .js,.mjs --fix --debug"
   },
   "keywords": [],
@@ -27,10 +27,10 @@
     "passport-local": "^1.0.0",
     "pg": "^8.11.3",
     "uuid": "^9.0.1",
-    "esbuild": "^0.20.1"
+    "esbuild": "^0.20.1",
+    "cross-env": "^7.0.3"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
     "eslint": "^8.57.0",
     "nodemon": "^3.1.0"
   }
