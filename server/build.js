@@ -1,4 +1,4 @@
-import { build } from 'esbuild';
+const { build } = require('esbuild');
 
 // Replace './src/server.js' with the entry point to your application
 build({
