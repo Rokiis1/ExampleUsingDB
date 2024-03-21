@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=local nodemon server.mjs",
     "start": "cross-env NODE_ENV=production node server.mjs",
-    "build": "node build.js",
+    "build": "node build.cjs",
     "lint": "eslint . --ext .js,.mjs --fix --debug"
   },
   "keywords": [],
