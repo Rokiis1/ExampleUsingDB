@@ -16,7 +16,7 @@ dotenv.config();
 
 const router = express.Router();
 
-router.get('/', isAdmin , userController.getUsers);
+router.get('/', passport.authenticate('jwt', { session: false }), isAdmin , userController.getUsers);
 
 router.post('/register', userValidationSchema, (req, res, next) => {
 	const errors = validationResult(req);
@@ -33,16 +33,16 @@ router.post('/login', validate(loginValidationSchema) , passport.authenticate('l
 
 router.get('/:id', validate(validateUserId), passport.authenticate('jwt', { session: false }), isUser, userController.getUserById);
 
-router.put('/:id', validate(validateUserId, userValidationSchema), isUser , userController.updateUser);
+router.put('/:id', validate(validateUserId, userValidationSchema), passport.authenticate('jwt', { session: false }), isUser , userController.updateUser);
 
-router.patch('/:id', validate(validateUserId, isUser, updateUserFieldsValidationSchema) , userController.updateUserFields);
+router.patch('/:id', validate(validateUserId, updateUserFieldsValidationSchema), passport.authenticate('jwt', { session: false }), isUser , userController.updateUserFields);
 
-router.delete('/:id', validate(validateUserId), isUser, userController.deleteUser);
+router.delete('/:id', validate(validateUserId), passport.authenticate('jwt', { session: false }), isUser, userController.deleteUser);
 
-router.get('/:id/reservations', validate(validateUserId), isUser, userController.getUserReservations);
+router.get('/:id/reservations', validate(validateUserId), passport.authenticate('jwt', { session: false }), isUser, userController.getUserReservations);
 
 router.post('/:userId/reservations/:bookId', validate(validateReservationParams), passport.authenticate('jwt', { session: false }), isUser, userController.createReservation);
 
-router.delete('/:userId/reservations/:bookId', validate(validateReservationParams), isUser, userController.deleteReservation);
+router.delete('/:userId/reservations/:bookId', validate(validateReservationParams), passport.authenticate('jwt', { session: false }), isAdmin, userController.deleteReservation);
 
 export default router;
