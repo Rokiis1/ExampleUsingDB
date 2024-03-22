@@ -73,8 +73,8 @@ const userModel = {
 		if (book.quantity === 0 || !book.available) {
 			throw new Error('Book is not available.');
 		}
-		// 'INSERT INTO reservations (user_id, book_id) VALUES ($1, $2)', [userId, bookId]
-		await pool.query('INSERT INTO reservations user_id = $1, book_id = $2', [userId, bookId]);
+
+		await pool.query('INSERT INTO reservations (user_id, book_id) VALUES ($1, $2)', [userId, bookId]);
 
 		book.quantity--;
 
