@@ -5,220 +5,293 @@ import reservationModel from '../models/reservationModel.mjs';
 import bookModel from '../models/bookModel.mjs';
 
 const userController = {
+  // getUsers: This asynchronous function handles GET requests to fetch all users. It uses the getUsers method from the userModel to fetch the users from the database. If successful, it sends a response with HTTP status 200 and the list of users. If an error occurs, it sends a response with HTTP status 500 and an error message.
+  getUsers: async (req, res) => {
+    try {
+      const users = await userModel.getUsers();
+      res.status(200).json(users);
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ message: 'An error occurred while fetching users.' });
+    }
+  },
 
-	getUsers: async (req, res) => {
-		try {
-			const users = await userModel.getUsers(req.query.paginate, req.query.page, req.query.limit);
+  // getPaginatedUsers: This asynchronous function handles GET requests to fetch a paginated list of users. It uses the getPaginatedUsers method from the userModel to fetch the users from the database. If successful, it sends a response with HTTP status 200 and the list of users. If an error occurs, it sends a response with HTTP status 500 and an error message.
+  getPaginatedUsers: async (req, res) => {
+    try {
+      const { page, limit } = req.query;
+      const users = await userModel.getPaginatedUsers(page, limit);
+      res.status(200).json(users);
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ message: 'An error occurred while fetching users.' });
+    }
+  },
 
-			res.status(200).json(users);
-		} catch (err) {
-			res.status(500).json({ message: 'An error occurred while fetching users.' });
-		}
-	},
+  // createUser: This asynchronous function handles POST requests to create a new user. It first checks if the email already exists in the database. If it does, it sends a response with HTTP status 400 and an error message. If the passwords do not match, it sends a response with HTTP status 400 and an error message. If the email does not exist and the passwords match, it hashes the password and creates a new user in the database. If successful, it sends a response with HTTP status 201 and the created user. If an error occurs, it sends a response with HTTP status 500 and an error message.
+  createUser: async (req, res) => {
+    try {
+      const {
+        username,
+        password,
+        repeatPassword,
+        email,
+        role = 'user',
+      } = req.body;
 
-	createUser: async (req, res) => {
-		try {
-			const { username, password, repeatPassword, email, role = 'user'} = req.body;
+      const existingUser = await userModel.getUserByEmail(email);
+      if (existingUser) {
+        res.status(400).json({ message: 'Email already exists.' });
+        return;
+      }
 
-			const existingUser = await userModel.getUserByEmail(email);
-			if (existingUser) {
-				res.status(400).json({ message: 'Email already exists.' });
-				return;
-			}
+      if (password !== repeatPassword) {
+        res.status(400).json({ message: 'Passwords do not match.' });
+        return;
+      }
 
-			if (password !== repeatPassword) {
-				res.status(400).json({ message: 'Passwords do not match.' });
-				return;
-			}
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-			const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = {
+        username,
+        password: hashedPassword,
+        email,
+        registered_on: new Date(),
+        reservations: [],
+        role,
+      };
 
-			const newUser = {
-				username,
-				password: hashedPassword,
-				email,
-				registered_on: new Date(),
-				reservations: [],
-				role
-			};
+      const createdUser = await userModel.createUser(newUser);
 
-			const createdUser = await userModel.createUser(newUser);
+      res.status(201).json(createdUser);
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ message: 'An error occurred while creating the user.' });
+    }
+  },
 
-			res.status(201).json(createdUser);
-		} catch (err) {
-			console.error(err);
-			res.status(500).json({ message: 'An error occurred while creating the user.' });
-		}
-	},
+  // getUserById: This asynchronous function handles GET requests to fetch a user by their ID. It uses the getUserById method from the userModel to fetch the user from the database. If the user is not found, it sends a response with HTTP status 404 and an error message. If the user is found, it sends a response with HTTP status 200 and the user. If an error occurs, it sends a response with HTTP status 500 and an error message.
+  getUserById: async (req, res) => {
+    try {
+      const id = req.params.id;
+      const user = await userModel.getUserById(id);
 
-	login: async (req, res) => {
-		try {
-			const { email, username } = req.body;
+      if (!user) {
+        res.status(404).json({ message: 'User not found.' });
+        return;
+      }
 
-			const user = await userModel.login({ username, email });
-			
-			res.status(200).json({ message: 'Logged in successfully.', user });	
-		} catch (err) {
-			if (err.message === 'User not found.' || err.message === 'Invalid credentials.') {
-				res.status(401).json({ message: err.message });
-			} else {
-				res.status(500).json({ message: 'An error occurred while logging in.' });
-			}
-		}
-	},
+      res.status(200).json(user);
+    } catch (err) {
+      res
+        .status(500)
+        .json({ message: 'An error occurred while retrieving the user.' });
+    }
+  },
 
-	getUserById: async (req, res) => {
-		try {
-			const id = req.params.id;
-			const user = await userModel.getUserById(id);
+  // updateUser: This asynchronous function handles PUT requests to update a user. It first checks if the email already exists in the database. If it does, it sends a response with HTTP status 400 and an error message. If the email does not exist, it uses the updateUser method from the userModel to update the user in the database. If the user is not found, it sends a response with HTTP status 404 and an error message. If the user is found and updated, it sends a response with HTTP status 200 and the updated user. If an error occurs, it sends a response with HTTP status 500 and an error message.
+  updateUser: async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updatedUser = req.body;
 
-			if (!user) {
-				res.status(404).json({ message: 'User not found.' });
-				return;
-			}
+      const email = req.body.email;
 
-			res.status(200).json(user);
-		} catch (err) {
-			res.status(500).json({ message: 'An error occurred while retrieving the user.' });
-		}
-	},
+      const existingUser = await userModel.getUserByEmail(email);
+      if (existingUser) {
+        res.status(400).json({ message: 'Email already exists.' });
+        return;
+      }
 
-	updateUser: async (req, res) => {
-		try {
-			const id = req.params.id;
-			const updatedUser = req.body;
+      const user = await userModel.updateUser(id, updatedUser);
 
-			const email = req.body.email;
+      if (!user) {
+        res.status(404).json({ message: 'User not found.' });
+        return;
+      }
 
-			const existingUser = await userModel.getUserByEmail(email);
-			if (existingUser) {
-				res.status(400).json({ message: 'Email already exists.' });
-				return;
-			}
+      res.status(200).json(user);
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ message: 'An error occurred while updating the user.' });
+    }
+  },
 
-			const user = await userModel.updateUser(id, updatedUser);
+  // updateUserFields: This asynchronous function handles PATCH requests to update specific fields of a user. It uses the updateUserFields method from the userModel to update the user in the database. If the user is not found, it sends a response with HTTP status 404 and an error message. If the user is found and updated, it sends a response with HTTP status 200 and the updated user. If an error occurs, it sends a response with HTTP status 500 and an error message.
+  updateUserFields: async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updatedFields = req.body;
 
-			if (!user) {
-				res.status(404).json({ message: 'User not found.' });
-				return;
-			}
+      const user = await userModel.updateUserFields(id, updatedFields);
 
-			res.status(200).json(user);
-		} catch (err) {
-			console.error(err);
-			res.status(500).json({ message: 'An error occurred while updating the user.' });
-		}
-	},
+      if (!user) {
+        res.status(404).json({ message: 'User not found.' });
+        return;
+      }
 
-	updateUserFields: async (req, res) => {
-		try {
-			const id = req.params.id;
-			const updatedFields = req.body;
+      res.status(200).json(user);
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ message: 'An error occurred while updating the user.' });
+    }
+  },
 
-			const user = await userModel.updateUserFields(id, updatedFields);
+  // deleteUser: This asynchronous function handles DELETE requests to delete a user. It first fetches the user's reservations, makes the books associated with the reservations available again, deletes the user's reservations, and then deletes the user. If the user is not found, it sends a response with HTTP status 404 and an error message. If the user is found and deleted, it sends a response with HTTP status 200 and a success message. If an error occurs, it sends a response with HTTP status 500 and an error message.
+  deleteUser: async (req, res) => {
+    try {
+      const id = req.params.id;
 
-			if (!user) {
-				res.status(404).json({ message: 'User not found.' });
-				return;
-			}
+      // Get the user's reservations
+      const reservations = await reservationModel.getUserReservations(id);
 
-			res.status(200).json(user);
-		} catch (err) {
-			console.error(err);
-			res.status(500).json({ message: 'An error occurred while updating the user.' });
-		}
-	},
+      // Make the books associated with the reservations available again
+      await bookModel.returnUserBooks(reservations);
 
-	deleteUser: async (req, res) => {
-		try {
-			const id = req.params.id;
+      // Delete the user's reservations
+      await reservationModel.deleteUserReservations(id);
 
-			const user = await userModel.deleteUser(id);
+      // Delete the user
+      const user = await userModel.deleteUser(id);
 
-			if (!user) {
-				res.status(404).json({ message: 'User not found.' });
-				return;
-			}
+      if (!user) {
+        res.status(404).json({ message: 'User not found.' });
+        return;
+      }
 
-			res.status(200).json({ message: 'User deleted successfully.' });
-		} catch (err) {
-			console.error(err);
-			res.status(500).json({ message: 'An error occurred while deleting the user.' });
-		}
-	},
+      res.status(200).json({ message: 'User deleted successfully.' });
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ message: 'An error occurred while deleting the user.' });
+    }
+  },
 
-	getUserReservations: async (req, res) => {
-		try {
-			const id = req.params.id;
-			const user = await userModel.getUserById(id);
+  // getUserReservations: This asynchronous function handles GET requests to fetch a user's reservations. It uses the getUserReservations method from the userModel to fetch the reservations from the database. If the user is not found, it sends a response with HTTP status 404 and an error message. If the user is found, it sends a response with HTTP status 200 and the user's reservations. If an error occurs, it sends a response with HTTP status 500 and an error message.
+  getUserReservations: async (req, res) => {
+    try {
+      const id = req.params.id;
+      const user = await userModel.getUserById(id);
 
-			if (!user) {
-				res.status(404).json({ message: 'User not found.' });
-				return;
-			}
+      if (!user) {
+        res.status(404).json({ message: 'User not found.' });
+        return;
+      }
 
-			const reservedBooks = await userModel.getUserReservations(id);
+      const reservedBooks = await userModel.getUserReservations(id);
 
-			const reservedBooksInfo = reservedBooks.map(book => ({
-				id: book.id,
-				title: book.title,
-				author: book.author,
-				published_on: book.published_on
-			}));
+      const reservedBooksInfo = reservedBooks.map((book) => ({
+        id: book.id,
+        title: book.title,
+        author: book.author,
+        published_on: book.published_on,
+      }));
 
-			res.status(200).json(reservedBooksInfo);
-		} catch (err) {
-			res.status(500).json({ message: 'An error occurred while retrieving the user reservations.' });
-		}
-	},
+      res.status(200).json(reservedBooksInfo);
+    } catch (err) {
+      res.status(500).json({
+        message: 'An error occurred while retrieving the user reservations.',
+      });
+    }
+  },
 
-	createReservation: async (req, res) => {
-		try {
-			const { book } = await userModel.createReservation(req.params);
-			res.status(200).json({ message: 'Book successfully reserved.', book });
-		} catch (err) {
-			console.error(err); // Add this line
-			if (err.message === 'User or book not found.' || err.message === 'Book is already reserved by the user.' || err.message === 'Book is not available.') {
-				res.status(400).json({ message: err.message });
-			} else {
-				res.status(500).json({ message: 'An error occurred while creating the reservation.' });
-			}
-		}
-	},
+  // createReservation: This asynchronous function handles POST requests to create a new reservation for a user. It first checks if the user and book exist and if the book is available. If any of these conditions are not met, it sends a response with HTTP status 400 and an error message. If the conditions are met, it creates a new reservation, decreases the book quantity, and sends a response with HTTP status 200 and a success message. If an error occurs, it sends a response with HTTP status 500 and an error message.
+  createReservation: async (req, res) => {
+    try {
+      const user = await userModel.getUserById(req.params.userId);
+      const book = await bookModel.getBookById(req.params.bookId);
 
-	deleteReservation: async (req, res) => {
-		try {
+      if (!user || !book) {
+        throw new Error('User or book not found.');
+      }
 
-			const userId = req.params.userId;
-			const bookId = req.params.bookId;
+      const existingReservation =
+        await reservationModel.getReservationByUserAndBook(
+          req.params.userId,
+          req.params.bookId,
+        );
 
-			const user = await userModel.getUserById(userId);
-			const book = await bookModel.getBookById(bookId);
+      if (existingReservation) {
+        throw new Error('Book is already reserved by the user.');
+      }
 
-			if (!user || !book) {
-				res.status(404).json({ message: 'User or book not found.' });
-				return;
-			}
+      if (book.quantity === 0 || !book.available) {
+        throw new Error('Book is not available.');
+      }
 
-			const reservation = await reservationModel.getReservationByUserAndBook(userId, bookId);
-			
-			if (!reservation) {
-				res.status(400).json({ message: 'Book is not reserved by the user.' });
-				return;
-			}
+      await reservationModel.createReservation(
+        req.params.userId,
+        req.params.bookId,
+      );
 
-			await reservationModel.deleteReservation(reservation.id);
+      // Decrease book quantity
+      await bookModel.decrementBookQuantity(req.params.bookId);
 
-			await bookModel.incrementBookQuantity(bookId);
+      res.status(200).json({ message: 'Book successfully reserved.', book });
+    } catch (err) {
+      if (
+        err.message === 'User or book not found.' ||
+        err.message === 'Book is already reserved by the user.' ||
+        err.message === 'Book is not available.'
+      ) {
+        res.status(400).json({ message: err.message });
+      } else {
+        res.status(500).json({
+          message: 'An error occurred while creating the reservation.',
+        });
+      }
+    }
+  },
 
-			await bookModel.updateBookAvailability(bookId, true);
+  // deleteReservation: This asynchronous function handles DELETE requests to delete a reservation. It first checks if the user, book, and reservation exist. If any of these conditions are not met, it sends a response with HTTP status 400 or 404 and an error message. If the conditions are met, it deletes the reservation, increments the book quantity, updates the book availability, and sends a response with HTTP status 200 and a success message. If an error occurs, it sends a response with HTTP status 500 and an error message.
+  deleteReservation: async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const bookId = req.params.bookId;
 
-			res.status(200).json({ message: 'Book successfully unreserved.' });
-		} catch (err) {
-			console.error(err);
-			res.status(500).json({ message: 'An error occurred while deleting the reservation.' });
-		}
-	}
+      const user = await userModel.getUserById(userId);
+      const book = await bookModel.getBookById(bookId);
+
+      if (!user || !book) {
+        res.status(404).json({ message: 'User or book not found.' });
+        return;
+      }
+
+      const reservation = await reservationModel.getReservationByUserAndBook(
+        userId,
+        bookId,
+      );
+
+      if (!reservation) {
+        res.status(400).json({ message: 'Book is not reserved by the user.' });
+        return;
+      }
+
+      await reservationModel.deleteReservation(reservation.id);
+
+      await bookModel.incrementBookQuantity(bookId);
+
+      await bookModel.updateBookAvailability(bookId, true);
+
+      res.status(200).json({ message: 'Book successfully unreserved.' });
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ message: 'An error occurred while deleting the reservation.' });
+    }
+  },
 };
 
 export default userController;

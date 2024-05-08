@@ -1,5 +1,5 @@
 # Use an official Node.js runtime as the base image
-FROM node:16 as builder
+FROM node:18 as builder
 
 # Set the working directory in the builder stage to /build
 WORKDIR /build
@@ -16,7 +16,7 @@ RUN npm install -g pnpm
 RUN pnpm install
 
 # Set the working directory in the final stage to /app
-FROM node:16 as final
+FROM node:18 as final
 
 WORKDIR /app
 

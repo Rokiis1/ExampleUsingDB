@@ -3,130 +3,135 @@ import bcrypt from 'bcrypt';
 import { pool } from '../db/postgresConnection.mjs';
 
 const userModel = {
+  // getUsers: This asynchronous function fetches all users from the database. It uses the pool.query method from the pg library to execute a SQL query that selects all columns from the users table, ordered by id.
+  getUsers: async () => {
+    try {
+      const users = await pool.query('SELECT * FROM users ORDER BY id');
+      return users.rows;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  },
 
-	getUsers: async (paginate, page, limit) => {
-		try {
-			if (paginate === 'true') {
-				const users = await pool.query('SELECT * FROM users OFFSET $1 LIMIT $2', [(page - 1) * limit, limit]);
-				return users.rows;
-			} else {
-				const users = await pool.query('SELECT * FROM users ORDER BY id');
-				return users.rows;
-			}
-		} catch (err) {
-			console.error(err);
-		}
-	},
+  // getPaginatedUsers: This asynchronous function fetches a page of users from the database. It uses the pool.query method to execute a SQL query that selects all columns from the users table, offset by (page - 1) * limit and limited by limit.
+  getPaginatedUsers: async (page, limit) => {
+    try {
+      const users = await pool.query('SELECT * FROM users OFFSET $1 LIMIT $2', [
+        (page - 1) * limit,
+        limit,
+      ]);
+      return users.rows;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  },
 
-	createUser: async (newUser) => {
-		try {
-			const { username, password, email, registered_on, role = 'user' } = newUser;
+  // createUser: This asynchronous function creates a new user in the database. It uses the pool.query method to execute a SQL query that inserts a new row into the users table with the provided user data, and returns the newly created user.
+  createUser: async (newUser) => {
+    try {
+      const {
+        username,
+        password,
+        email,
+        registered_on,
+        role = 'user',
+      } = newUser;
 
-			const result = await pool.query('INSERT INTO users (username, password, email, registered_on, role) VALUES ($1, $2, $3, $4, $5) RETURNING *', [username, password, email, registered_on, role]);
-			return result.rows[0];
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	},
+      const result = await pool.query(
+        'INSERT INTO users (username, password, email, registered_on, role) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [username, password, email, registered_on, role],
+      );
+      return result.rows[0];
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
 
-	getUserByEmail: async ({email}) => {
-		try {
-			const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-			return result.rows[0];
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	},
+  // getUserByEmail: This asynchronous function fetches a user by their email from the database. It uses the pool.query method to execute a SQL query that selects all columns from the users table where the email matches the provided email.
+  getUserByEmail: async ({ email }) => {
+    try {
+      const result = await pool.query('SELECT * FROM users WHERE email = $1', [
+        email,
+      ]);
+      return result.rows[0];
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
 
-	login: async ({ username, email }) => {
-		const userResult = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
+  // Login: This asynchronous function fetches a user by their username or email from the database. It uses the pool.query method to execute a SQL query that selects all columns from the users table where the username or email matches the provided username or email.
+  login: async ({ username, email }) => {
+    const userResult = await pool.query(
+      'SELECT * FROM users WHERE username = $1 OR email = $2',
+      [username, email],
+    );
 
-		if (userResult.rows.length === 0) {
-			throw new Error('User not found.');
-		}
+    if (userResult.rows.length === 0) {
+      throw new Error('User not found.');
+    }
 
-		const user = userResult.rows[0];
+    const user = userResult.rows[0];
 
-		return user;
-	},
+    return user;
+  },
 
-	createReservation: async ({ userId, bookId }) => {
-		const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
-		const bookResult = await pool.query('SELECT * FROM books WHERE id = $1', [bookId]);
+  // getUserById: This asynchronous function fetches a user by their ID from the database. It uses the pool.query method to execute a SQL query that selects all columns from the users table where the id matches the provided ID.
+  getUserById: async (id) => {
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    return result.rows[0];
+  },
 
-		const user = userResult.rows[0];
-		const book = bookResult.rows[0];
+  // getUserReservations: This asynchronous function fetches all reservations for a specific user from the database. It uses the pool.query method to execute a SQL query that selects all columns from the books table, joining the reservations and users tables, where the user_id matches the provided ID.
+  getUserReservations: async (userId) => {
+    const result = await pool.query(
+      'SELECT books.* FROM users JOIN reservations ON users.id = reservations.user_id JOIN books ON reservations.book_id = books.id WHERE users.id = $1',
+      [userId],
+    );
+    return result.rows;
+  },
 
-		if (!user || !book) {
-			throw new Error('User or book not found.');
-		}
+  // updateUser: This asynchronous function updates a user by their ID in the database. It first hashes the provided password using bcrypt, then uses the pool.query method to execute a SQL query that updates the username, password, and email columns in the users table where the id matches the provided ID, and returns the updated user.
+  updateUser: async (id, updatedUser) => {
+    const { username, password, email } = updatedUser;
+    const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
+    const result = await pool.query(
+      'UPDATE users SET username = $1, password = $2, email = $3 WHERE id = $4 RETURNING *',
+      [username, hashedPassword, email, id],
+    );
+    return result.rows[0];
+  },
 
-		const reservationResult = await pool.query('SELECT * FROM reservations WHERE user_id = $1 AND book_id = $2', [userId, bookId]);
-		const reservation = reservationResult.rows[0];
+  // updateUserFields: This asynchronous function updates specific fields of a user by their ID in the database. It generates a SET clause for the SQL query from the provided fields, then uses the pool.query method to execute a SQL query that updates the specified fields in the users table where the id matches the provided ID, and returns the updated user.
+  updateUserFields: async (id, updatedFields) => {
+    const setFields = Object.keys(updatedFields)
+      .map((key, i) => `${key} = $${i + 1}`)
+      .join(', ');
+    const values = Object.values(updatedFields);
+    values.push(id);
+    const result = await pool.query(
+      `UPDATE users SET ${setFields} WHERE id = $${values.length} RETURNING *`,
+      values,
+    );
+    return result.rows[0];
+  },
 
-		if (reservation) {
-			throw new Error('Book is already reserved by the user.');
-		}
-
-		if (book.quantity === 0 || !book.available) {
-			throw new Error('Book is not available.');
-		}
-
-		await pool.query('INSERT INTO reservations (user_id, book_id) VALUES ($1, $2)', [userId, bookId]);
-
-		book.quantity--;
-
-		if (book.quantity === 0) {
-			book.available = false;
-		}
-
-		await pool.query('UPDATE books SET quantity = $1, available = $2 WHERE id = $3', [book.quantity, book.available, bookId]);
-
-		return { user, book };
-	},
-
-	getUserById: async (id) => {
-		const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
-		return result.rows[0];
-	},
-
-	getUserReservations: async (userId) => {
-		const result = await pool.query('SELECT books.* FROM users JOIN reservations ON users.id = reservations.user_id JOIN books ON reservations.book_id = books.id WHERE users.id = $1', [userId]);
-		return result.rows;
-	},
-
-	updateUser: async (id, updatedUser) => {
-		const { username, password, email } = updatedUser;
-		const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
-		const result = await pool.query('UPDATE users SET username = $1, password = $2, email = $3 WHERE id = $4 RETURNING *', [username, hashedPassword, email, id]);
-		return result.rows[0];
-	},
-
-	updateUserFields: async (id, updatedFields) => {
-		const setFields = Object.keys(updatedFields).map((key, i) => `${key} = $${i + 1}`).join(', ');
-		const values = Object.values(updatedFields);
-		values.push(id);
-		const result = await pool.query(`UPDATE users SET ${setFields} WHERE id = $${values.length} RETURNING *`, values);
-		return result.rows[0];
-	},
-
-	deleteUser: async (id) => {
-		// Get all the reservations of the user
-		const reservations = await pool.query('SELECT * FROM reservations WHERE user_id = $1', [id]);
-		// Return all the books associated with the reservations
-		for (let reservation of reservations.rows) {
-			await pool.query('UPDATE books SET status = $1 WHERE id = $2', ['available', reservation.book_id]);
-		}
-		// Delete the reservations
-		await pool.query('DELETE FROM reservations WHERE user_id = $1', [id]);
-
-		// Delete the user
-		const result = await pool.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
-		return result.rows[0];
-	}
-	
+  // deleteUser: This asynchronous function deletes a user by their ID from the database. It uses the pool.query method to execute a SQL query that deletes the row from the users table where the id matches the provided ID, and returns the deleted user. If an error occurs, it logs the error and throws it.
+  deleteUser: async (userId) => {
+    try {
+      const result = await pool.query(
+        'DELETE FROM users WHERE id = $1 RETURNING *',
+        [userId],
+      );
+      return result.rows[0];
+    } catch (error) {
+      console.error('An error occurred while deleting the user.', error);
+      throw error;
+    }
+  },
 };
 
 export default userModel;

@@ -1,44 +1,45 @@
-// Import the JWT Strategy and ExtractJwt method from 'passport-jwt'.
+// Import the JWT strategy from the passport-jwt module.
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-
-// Import the dotenv module to load environment variables.
 import dotenv from 'dotenv';
-
-// Import the user model.
 import userModel from '../models/userModel.mjs';
 
-// Load environment variables from a .env file into process.env.
-dotenv.config();
+// Load the environment variables based on the NODE_ENV value (prod or dev).
+if (process.env.NODE_ENV === 'prod') {
+  dotenv.config({ path: '.env.prod' });
+} else {
+  dotenv.config({ path: '.env.dev' });
+}
 
 // Define the options for the JWT strategy.
 const opts = {
-	// Function that accepts a request as the only parameter and returns either the JWT as a string or null.
-	jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-	// Secret string which the JWT was signed with.
-	secretOrKey: process.env.JWT_SECRET
+  //  // Extract the JWT token from the Authorization header.
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  // Define the secret key for the JWT token.
+  secretOrKey: process.env.JWT_SECRET,
 };
 
-// Define an asynchronous function to create the JWT strategy.
+//  createJwtStrategy function to create a new JWT strategy. We will use this function to create a new JWT strategy for passport authentication.
 const createJwtStrategy = async () => {
-	// Create a new JWT strategy.
-	const jwtStrategy = new JwtStrategy(opts, async (jwt_payload, done) => {
-		try {
-			// Try to find a user with the ID from the JWT payload.
-			const user = await userModel.getUserById(jwt_payload.id); 
-			if (user) {
-				// If the user is found, call 'done' with the user object.
-				return done(null, user);
-			}
-			// If the user is not found, call 'done' with false.
-			return done(null, false);
-		} catch (error) {
-			// If there's an error, call 'done' with the error and false.
-			return done(error, false);
-		}
-	});
+  //  Create a new JWT strategy with the options defined above.
+  const jwtStrategy = new JwtStrategy(opts, async (jwt_payload, done) => {
+    try {
+      // Try to find a user with the ID from the JWT payload.
+      const user = await userModel.getUserById(jwt_payload.id);
+      if (user) {
+        // If the user is found, call 'done' with the user object.
+        // null is the error object, user is the user object, and null is the info object.
+        return done(null, user);
+      }
+      // If the user is not found, call 'done' with false.
+      return done(null, false);
+    } catch (error) {
+      // If there's an error, call 'done' with the error and false.
+      return done(error, false);
+    }
+  });
 
-	// Return the JWT strategy.
-	return jwtStrategy;
+  // Return the JWT strategy.
+  return jwtStrategy;
 };
 
 // Export the function to create the JWT strategy.
