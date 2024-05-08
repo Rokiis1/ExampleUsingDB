@@ -1,8 +1,13 @@
+if (process.env.NODE_ENV === 'development') {
+	console.log('Running in development mode');
+  } else if (process.env.NODE_ENV === 'production') {
+	console.log('Running in production mode');
+  }
+
 // Importing express module
 import express from 'express';
 
 import users from './users.json' assert { type: "json" };
-import authors from './authors.json' assert { type: "json" };
 import books from './books.json' assert { type: "json" };
 
 // fs is a built-in module in Node.js for interacting with the file system
@@ -20,43 +25,67 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const router = express.Router();
 
-// router.get('/users', (req, res) => {
-// 	try {
-// 		res.status(200).json(users);
-// 	} catch (err) {
-// 		res.status(500).json({ message: 'An error occurred while retrieving users.' });
-// 	}
-// });
-
 router.get('/users', (req, res) => {
-    try {
-        // const page = parseInt(req.query.page) || 1; // Default to page 1
-        // const limit = parseInt(req.query.limit) || 3; // Default to 10 items per page
-        // const start = (page - 1) * limit;
-        // const end = page * limit;
+	try {
+		res.status(200).json(users);
+	} catch (err) {
+		res.status(500).json({ message: 'An error occurred while retrieving users.' });
+	}
+});
 
-        // const paginatedUsers = users.slice(start, end);
-		// {{BASE_URI}}/users?paginate=true&page=1&limit=3
-		if (req.query.paginate === 'true') {
-            const page = parseInt(req.query.page) || 1; // Default to page 1
-            const limit = parseInt(req.query.limit) || 3; // Default to 10 items per page
-			// start - (page - 1) * limit = 0 - (1 - 1) * 3 = 0
-			// Why do we need to subtract 1 from page?
-			// If page is 1, we want to start at 0
+router.get('/users/paginate', (req, res) => {
+    try {
+        const page = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit);
+
+        if (Number.isNaN(page) || Number.isNaN(limit)) {
+            res.status(400).json({ message: 'Both page and limit query parameters are required and should be numbers.' });
+        } else {
             const start = (page - 1) * limit;
             const end = page * limit;
-
             const paginatedUsers = users.slice(start, end);
-
             res.status(200).json(paginatedUsers);
-        } else {
-            res.status(200).json(users);
         }
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'An error occurred while retrieving users.' });
     }
 });
+
+router.get('/users/search', (req, res) => {
+    try {
+        const username = req.query.username;
+
+        if (!username) {
+            res.status(400).json({ message: 'Name query parameter is required.' });
+        } else {
+            const filteredUsers = users.filter(user => user.username.toLowerCase().includes(username.toLowerCase()));
+            res.status(200).json(filteredUsers);
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occurred while searching for users.' });
+    }
+});
+
+router.get('/users/sort', (req, res) => {
+    try {
+        const sort = req.query.sort;
+        let sortedUsers = [...users];
+
+        if (sort === 'desc') {
+            sortedUsers.sort((a, b) => b.username.localeCompare(a.username));
+        } else {
+            sortedUsers.sort((a, b) => a.username.localeCompare(b.username));
+        }
+
+        res.status(200).json(sortedUsers);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occurred while sorting users.' });
+    }
+});
+
 
 router.post('/users/register', async (req, res) => {
 	try {
