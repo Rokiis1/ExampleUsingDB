@@ -4,11 +4,13 @@ services:
   server:
     build: 
       context: ./server
-      dockerfile: Dockerfile
-    image: web-server
+      dockerfile: Dockerfile.prod
+    image: library-server
     ports:
       - "3000:3000"
     env_file:
-      - server/.env.production
+      - server/.env.prod
     volumes:
-      - ./server:/app
+      - ./server:/app/server
+
+

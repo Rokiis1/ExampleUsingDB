@@ -8,7 +8,7 @@ import PrivateRoute from './routes/privateRoutes';
 import { AuthContext } from './utils/AuthContext';
 
 function App() {
-  const { user: authUser, logoutUser } = useContext(AuthContext); // get the user from your AuthContext
+  const { user: authUser, logoutUser } = useContext(AuthContext); 
 
   return (
     <Router>

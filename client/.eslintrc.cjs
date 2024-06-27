@@ -8,7 +8,7 @@ module.exports = {
     'plugin:react-hooks/recommended',
     'plugin:import/recommended',
     'plugin:jsx-a11y/recommended',
-    'plugin:prettier/recommended', // Add this line
+    'plugin:prettier/recommended',
     'eslint-config-prettier',
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs'],
@@ -22,7 +22,7 @@ module.exports = {
       },
     },
   },
-  plugins: ['react-refresh', 'prettier'], // Add 'prettier' here
+  plugins: ['react-refresh', 'prettier'],
   rules: {
     'no-unused-vars': [
       'error',
@@ -35,6 +35,6 @@ module.exports = {
     ],
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     'react/prop-types': 0,
-    'prettier/prettier': ['error', { endOfLine: 'auto' }], // Updated this line
+    'prettier/prettier': ['error', { endOfLine: 'auto' }],
   },
 };
