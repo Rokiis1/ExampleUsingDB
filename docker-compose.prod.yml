@@ -4,7 +4,7 @@ services:
   server:
     build: 
       context: ./server
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     image: library-server
     ports:
       - "3000:3000"
