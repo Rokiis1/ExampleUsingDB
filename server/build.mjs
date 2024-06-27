@@ -23,7 +23,7 @@ try {
     minify: true,
     // Specify the target platform as Node.js and the target version as Node.js 16.
     platform: 'node',
-    target: 'node16',
+    target: 'node18',
     // Specify the external packages that should not be bundled. We will exclude the external packages from the bundle. What is an external package? An external package is a package that is not part of the project and should not be bundled with the project code. This includes packages like express, pg, and dotenv.
     packages: 'external',
     // Define the environment variables for the production build. We will define the NODE_ENV variable as 'production' for the production build.

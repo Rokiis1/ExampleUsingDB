@@ -62,7 +62,7 @@ router.post(
     );
     res.status(200).json({ message: 'Logged in successfully.', token });
   },
-  userController.login,
+  // userController.login,
 );
 
 router.get(
